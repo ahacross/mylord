@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="me.ahacross.mylord.bbs.BbsFileMapper">
+	<select id="getList" resultType="hashmap" parameterType="me.ahacross.mylord.bbs.vo.BbsFile">
+		select 
+			seq,
+			ori_name, 
+			mask_name,
+			size,
+			file_info
+		from 
+			bbs_file
+		where 
+			bbs_id = #{bbs_id}
+		order by seq
+	</select>
+	<insert id="insert" parameterType="me.ahacross.mylord.bbs.vo.BbsFile"  >
+		insert into bbs_file (bbs_id, seq, ori_name, mask_name, size, file_info) 
+		(select #{bbs_id}, IFNULL(max(seq), 0) + 1 , #{ori_name}, #{mask_name}, #{size}, #{file_info} from bbs_file where bbs_id = #{bbs_id} )
+	</insert>
+	
+	<update id="update" parameterType="me.ahacross.mylord.bbs.vo.BbsFile" >
+		update bbs_file  
+			<trim prefix="SET" suffixOverrides=",">
+				<if test='ori_name != null'>
+					ori_name = #{ori_name} , 
+				</if>
+				<if test='mask_name != null'>
+					mask_name = #{mask_name} ,
+				</if>
+				<if test='size != null'>
+					size = #{size} , 
+				</if>
+				<if test='file_info != null'>
+					file_info = #{file_info} , 
+				</if>
+			</trim>			
+		where bbs_id = #{bbs_id} and seq = #{seq}
+	</update>
+	
+	<delete id="delete" parameterType="me.ahacross.mylord.bbs.vo.BbsFile">
+		delete from 
+			bbs_file
+		where 
+			bbs_id = #{bbs_id} 
+		 <if test='seq != null'>
+			and seq = #{seq} 
+		</if>
+	</delete>
+	
+</mapper>

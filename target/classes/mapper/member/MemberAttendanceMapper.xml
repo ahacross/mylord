@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="me.ahacross.mylord.attendance.MemberAttendanceMapper">	
+	<select id="getList" resultType="hashmap" parameterType="me.ahacross.mylord.attendance.MemberAttendance">
+		select 
+			m.member_id,
+			m.name,
+			m.birthday,
+			m.part,
+			ma.before_check,
+			ma.after_check
+		from 
+			member m
+		left join (select * from member_attendance where attendance_date = #{attendance_date}) ma
+		on m.member_id = ma.member_id
+		<trim prefix="where" prefixOverrides="AND" >
+	    	<if test='status != null'>
+	    		m.status = #{status}
+	    	</if>
+	    </trim> 
+		order by name
+	</select>
+	
+	<insert id="insert" parameterType="me.ahacross.mylord.attendance.MemberAttendance" >
+		insert into member_attendance (member_id, attendance_date, part, before_check, after_check)
+			values (#{member_id}, #{attendance_date}, #{part}, #{before_check}, #{after_check})
+		 ON DUPLICATE KEY UPDATE 
+		 <trim suffixOverrides="," >
+		 	<if test='part != null'>
+	    		part = #{part},
+	    	</if>
+			<if test='before_check != null'>
+	    		before_check = #{before_check},
+	    	</if>
+	    	<if test='after_check != null'>
+	    		after_check = #{after_check} ,
+	    	</if>
+		</trim>
+	</insert>
+	
+	<delete id="delete" parameterType="me.ahacross.mylord.attendance.MemberAttendance">
+		delete from 
+			member_attendance
+		where member_id = #{member_id} and attendance_date = #{attendance_date}
+	</delete>
+</mapper>

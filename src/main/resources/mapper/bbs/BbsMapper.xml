@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="me.ahacross.mylord.bbs.BbsMapper">
+	<select id="getList" resultType="hashmap" parameterType="me.ahacross.mylord.bbs.vo.Bbs">
+		select * from (
+			
+			select 
+				b.bbs_id,
+				(select GROUP_CONCAT(category_name) from bbs_category_mapping bcm join bbs_category bc on bc.category_id = bcm.category_id where bcm.bbs_id = b.bbs_id) category_names,			
+				(select GROUP_CONCAT(category_id) from bbs_category_mapping bcm where bbs_id = b.bbs_id) category_ids ,
+				title,
+				count,
+				DATE_FORMAT(i_date, '%Y-%m-%d %H:%i:%s') regi_date,
+				(select name from member where member_id = b.i_member_id ) regi_member_name,
+				DATE_FORMAT(u_date, '%Y-%m-%d %H:%i:%s') mod_date,
+				(select name from member where member_id = b.u_member_id ) mod_member_name,
+				p_bbs_id
+			from 
+				bbs b
+			join bbs_treepath bt on b.bbs_id = bt.bbs_id
+			<trim prefix="where" prefixOverrides="AND" >
+				<if test='bbs_id != null'>
+		    		b.bbs_id = #{bbs_id}
+		    	</if>	    	
+		    	<if test='p_bbs_id != null'>
+		    		p_bbs_id = #{p_bbs_id}
+		    	</if>	    	
+		    </trim>
+		    
+		) list
+		<trim prefix="where" prefixOverrides="AND" >
+			<if test='search_category_id != null'>
+				category_ids like '%${search_category_id}%'
+		   	</if>	    	
+		</trim>
+		order by p_bbs_id desc
+	</select>
+	
+	<select id="getOne" resultType="hashmap" parameterType="me.ahacross.mylord.bbs.vo.Bbs">
+		select
+			(select GROUP_CONCAT(category_id) from bbs_category_mapping bcm where bbs_id = b.bbs_id) category_ids ,
+			bbs_id, 
+			title,
+			content,
+			count
+		from 
+			bbs b
+		where 
+			bbs_id = #{bbs_id}
+	</select>
+	
+	<insert id="insert" parameterType="me.ahacross.mylord.bbs.vo.Bbs" useGeneratedKeys="true" keyProperty="bbs_id" >
+		insert into bbs (title, content, count, i_date, i_member_id) 
+		(select #{title}, #{content}, 0, now(), #{i_member_id} )
+	</insert>
+	
+	<update id="update" parameterType="me.ahacross.mylord.bbs.vo.Bbs" >
+		update bbs  
+			<trim prefix="SET" suffixOverrides=",">				
+				<if test='title != null'>
+					title = #{title} ,
+				</if>
+				<if test='content != null'>
+					content = #{content} , 
+				</if>
+				<if test='count != null'>
+					count = count + 1 ,
+				</if>
+					u_date = now() ,
+					u_member_id = #{u_member_id}
+			</trim>			
+		where bbs_id = #{bbs_id}
+	</update>
+	
+	<delete id="delete" parameterType="me.ahacross.mylord.bbs.vo.Bbs">
+		delete from 
+			bbs 
+		where bbs_id = #{bbs_id}
+	</delete>
+</mapper>

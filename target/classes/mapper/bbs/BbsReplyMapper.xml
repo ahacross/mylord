@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="me.ahacross.mylord.bbs.reply.BbsReplyMapper">
+	<select id="getList" resultType="hashmap" parameterType="me.ahacross.mylord.bbs.vo.BbsReply">	
+		select 
+			br.seq,
+			br.reply_text,
+			br.member_id,	
+			DATE_FORMAT(br.u_date, '%Y-%m-%d %H:%i:%s') u_date,
+			m.name 
+		from 
+			bbs_reply br
+		join member m on br.member_id = m.member_id 			
+		where 
+			bbs_id = #{bbs_id}
+		order by
+			br.seq
+	</select>
+	
+	<insert id="insert" parameterType="me.ahacross.mylord.bbs.vo.BbsReply"  >
+		insert into bbs_reply (bbs_id, seq, reply_text, member_id, u_date) 
+		(select #{bbs_id}, IFNULL(max(seq), 0) + 1 ,  #{reply_text}, #{member_id}, now() from bbs_reply where bbs_id = #{bbs_id} )		
+	</insert>
+	
+	<update id="update" parameterType="me.ahacross.mylord.bbs.vo.BbsReply" >
+		update bbs_reply 
+			<trim prefix="SET" suffixOverrides=",">
+				<if test='reply_text != null'>
+					reply_text = #{reply_text} , 
+				</if>				
+				u_date = now() ,
+				member_id = #{member_id}
+			</trim>			
+		where bbs_id = #{bbs_id} and seq = #{seq} 
+	</update>
+	
+	<delete id="delete" parameterType="me.ahacross.mylord.bbs.vo.BbsReply">
+		delete from 
+			bbs_reply
+		where bbs_id = #{bbs_id} and seq = #{seq}
+	</delete>
+	
+	<delete id="deleteByBbsId" parameterType="me.ahacross.mylord.bbs.vo.BbsReply">
+		delete from 
+			bbs_reply
+		where bbs_id = #{bbs_id} 
+	</delete>
+</mapper>

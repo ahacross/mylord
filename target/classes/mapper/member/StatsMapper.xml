@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="me.ahacross.mylord.stats.StatsMapper">	
+	<select id="getPart" resultType="hashmap" parameterType="me.ahacross.mylord.stats.Stats">
+		select
+			case WHEN e.part = 's' then '소프라노' WHEN e.part = 'a' then '알토' WHEN e.part = 't' then '테너' WHEN e.part = 'b' then '베이스' END AS part,
+			truncate(SUM(e.before_check_count)/count(part), 0) 'before_avg',
+      		truncate(SUM(e.after_check_count)/count(part), 0) 'after_avg',
+			concat(truncate(SUM(e.before_check_count/e.before_enroll * 100)/count(part), 0), '%') 'before_rate',
+  			concat(truncate(SUM(e.after_check_count/e.after_enroll * 100)/count(part), 0), '%') 'after_rate'  
+		from (
+			select 
+				attendance_date,
+				ma.part,
+				SUM(IF(before_check='Y'
+				<if test='beforeCheckCond != null'>
+					${beforeCheckCond}
+				</if>				
+				, 1, 0)) 'before_check_count',
+				SUM(IF(after_check='Y'
+				<if test='afterCheckCond != null'>
+					${afterCheckCond}
+				</if>
+				, 1, 0)) 'after_check_count',  
+				me.before_count 'before_enroll',
+				me.after_count 'after_enroll'
+			from 
+				member_attendance ma
+				join member_enrollment me on ma.attendance_date = me.attend_date and ma.part = me.part
+			where ma.part in ('s', 'a', 't', 'b')
+				<choose>
+					<when test='startDate != null and  endDate != null and startDate != endDate'>
+						and attendance_date >= #{startDate}
+					</when>
+					<when test='startDate != null and  endDate != null and startDate == endDate'>
+						and ma.attendance_date between #{startDate} and #{endDate}
+					</when>
+				</choose>
+			group by ma.attendance_date, ma.part
+			order by ma.attendance_date, field(ma.part, 's', 'a', 't', 'b')
+		) e
+		group by e.part
+		order by field(e.part, 's', 'a', 't', 'b')
+	</select>
+	
+	<select id="getOne" resultType="hashmap" parameterType="me.ahacross.mylord.stats.Stats">
+		select  			 
+			case WHEN m.part = 's' then '소프라노' WHEN m.part = 'a' then '알토' WHEN m.part = 't' then '테너' WHEN m.part = 'b' then '베이스' ELSE m.part END AS part,
+			m.name,
+			concat(truncate(m.before_cnt/m.week_cnt*100, 0), '%') 'before_rate',
+			concat(truncate(m.after_cnt/m.week_cnt*100, 0), '%') 'after_rate'
+		from (
+			select 
+				m.part,
+				m.name,
+				m.member_id, 
+				SUM(IF( before_check='Y'
+				<if test='beforeCheckCond != null'>
+					${beforeCheckCond}
+				</if>
+				, 1, 0)) 'before_cnt', 
+				SUM(IF( (after_check='Y'
+				<if test='afterCheckCond != null'>
+					${afterCheckCond}
+				</if>
+				), 1, 0)) 'after_cnt',
+				(select truncate(DATEDIFF(max(attendance_date), min(attendance_date)) / 7, 0) + 1 from member_attendance
+				<trim prefix="where" prefixOverrides="AND" >
+					<choose>
+						<when test='startDate != null and  endDate != null and startDate == endDate'>
+							attendance_date >= #{startDate}
+						</when>
+						<when test='startDate != null and  endDate != null and startDate != endDate'>
+							attendance_date between #{startDate} and #{endDate}
+						</when>
+					</choose>
+				</trim>				 
+				) week_cnt
+			from 
+				member m
+			left join member_attendance ma on ma.member_id = m.member_id			 
+			<trim prefix="where" prefixOverrides="AND" >
+				<choose>
+					<when test='startDate != null and  endDate != null and startDate == endDate'>
+						and attendance_date >= #{startDate}
+					</when>
+					<when test='startDate != null and  endDate != null and startDate != endDate'>
+						and attendance_date between #{startDate} and #{endDate}
+					</when>
+				</choose>
+				<if test='member_id != null'>
+					and member_id = #{member_id}
+				</if>	    	
+			</trim>
+			group by member_id
+			order by field(m.part, 's', 'a', 't', 'b'), m.name
+		) m 
+	</select>
+</mapper>

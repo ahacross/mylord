@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="me.ahacross.mylord.bbs.category.BbsCategoryMapper">
+	<select id="getList" resultType="hashmap">	
+		select 
+			*
+		from 
+			bbs_category	 			
+		order by
+			category_name
+	</select>
+	
+	<insert id="insert" parameterType="me.ahacross.mylord.bbs.vo.BbsCategory">
+		insert into bbs_category (category_name) values (#{category_name})
+	</insert>
+	
+	<update id="update" parameterType="me.ahacross.mylord.bbs.vo.BbsCategory" >
+		update bbs_category set 
+			category_name = #{category_name}
+		where category_id = #{category_id}  
+	</update>
+	
+	<delete id="delete" parameterType="me.ahacross.mylord.bbs.vo.BbsCategory">
+		delete from 
+			bbs_category
+		where category_id = #{category_id}
+	</delete>
+	
+</mapper>
