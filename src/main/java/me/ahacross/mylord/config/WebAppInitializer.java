@@ -21,8 +21,7 @@ public class WebAppInitializer implements WebApplicationInitializer {
         rootContext.register(RootConfig.class);
         rootContext.setConfigLocation(CONFIG_LOCATION);
         sc.addListener(new ContextLoaderListener(rootContext));
-  
-          
+            
         // Spring Servlet Context
         AnnotationConfigWebApplicationContext servletContext = new AnnotationConfigWebApplicationContext();
         servletContext.register(ServletConfig.class);

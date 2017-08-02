@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="me.ahacross.mylord.history.HistoryMapper">
+	<select id="getList" resultType="hashmap" parameterType="me.ahacross.mylord.history.History">	
+		select 
+			singed_date,
+			title,
+			link,
+			source,
+			scanning,
+			practice,
+			etc
+		from 
+			songs_history 
+		<trim prefix="where" prefixOverrides="AND" >
+	    	<if test='singed_date != null'>
+	    		and singed_date like '%${singed_date}%'
+	    	</if>
+	    	<if test='title != null'>
+	    		and title like '%${title}%'
+	    	</if>
+	    </trim>
+	    order by singed_date desc
+	</select>
+	
+	<select id="getOne" resultType="hashmap" parameterType="me.ahacross.mylord.history.History">
+		select 
+			* 
+		from 
+			songs_history
+		<trim prefix="where" prefixOverrides="AND" >
+			<if test='member_id != null'>
+				member_id = #{member_id}
+			</if>
+			<if test='phone != null'>
+	    		phone = #{phone}
+	    	</if>
+		</trim>
+	</select>
+	
+	<insert id="insert" parameterType="me.ahacross.mylord.history.History" >
+		insert into songs_history (singed_date, title, link, source, scanning, practice, etc) 
+		(select #{singed_date}, #{title}, #{link}, #{source}, #{scanning}, #{practice}, #{etc})		
+	</insert>
+	
+	<update id="update" parameterType="me.ahacross.mylord.history.History" >
+		update songs_history  
+			<trim prefix="SET" suffixOverrides=",">
+				<if test='title != null'>
+					title = #{title} , 
+				</if>
+				<if test='link != null'>
+					link = #{link} ,
+				</if>
+				<if test='source != null'>
+					source = #{source} , 
+				</if>
+				<if test='scanning != null'>
+					scanning = #{scanning} ,
+				</if>
+				<if test='practice != null'>
+					practice = #{practice} ,
+				</if>
+				<if test='etc != null'>
+					etc = #{etc} ,
+				</if>
+			</trim>			
+		where singed_date = #{singed_date}
+	</update>
+	
+	<delete id="delete" parameterType="me.ahacross.mylord.history.History">
+		delete from 
+			songs_history 
+		where singed_date = #{singed_date}
+	</delete>
+</mapper>

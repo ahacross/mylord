@@ -55,10 +55,16 @@
 			document.querySelector(".main-content").scrollTop = 0;
 		}
 		
+		
 		var changeMenu = function(id) {
+			let url = "";
 			if(id === "status"){
 				
+			}else if(id === "facebook" || id === "practice") {
+				url = "page/link/" + id+".jsp";
 			}
+			
+			naviSectionArea.load(url);
 		}
 		
 		$(document).ready(function(){
@@ -66,6 +72,7 @@
 				function(){return window.jsLodingComplate || false;},
 				function(){
 					delete window.jsLodingComplate;
+					window.naviSectionArea  = $(".navigation-section");
 					var md = new Material({
 							options: {
 								FancyHeader: {
@@ -76,6 +83,19 @@
 						}),
 						sm = document.getElementById("navigation-sidemenu");
 					
+					if(cookie.get("mylordId") === ""){
+						naviSectionArea.html(naviSectionArea.html() + "<br> 사용자 정보가 없습니다. 휴대폰 번호를 입력해 주세요.");
+						login();
+					}
+					
+					if(cookie.get("mylordAuth") === ""){
+						naviSectionArea.html(naviSectionArea.html() + "<br><br> 권한 정보를 설정합니다.");
+						setAuth();
+					}
+					
+					// 쿠키 체크
+					// 권한 체크					
+					
 					SideMenu.hide(sm);
 					$("#navigation-sidemenu").find(".menu > li:not(.divider)").on("click", "a", function(){
 						if (Responsive.device != "desktop") {
@@ -85,36 +105,28 @@
 						selectMenu($(this));
 						var id = $(this).attr("id");
 						console.log(id);
+						if(id !== "status") {
+							changeMenu(id);
+						}
 					});
 					$(".menu > li").first().find("a").click();
 					
 					$("#menuBtn").on("click", function(){
 						SideMenu.toggle(sm);
 					});
-					
 				}
 			);
 		});
-	/* 
-		var loginableMember = function(name){
-			var loginableMember = ["cad526f449dec4e838c5d0aba5de948ec94778ec77f36537d4368e3aa3a0f7de", "adbc432a627844edf654e8d1e477a409c98c3a0260d5bd590e2c6f3f13a7bda6", "2c1249b640aaa3eb355c9e6a4df48c07fefa304616ecf8cd0689ec2d7f1754cf", "2c312280cbffa9bea959aa0993196a37f751620254e47ddb010cdeaef2a941e0", "1b80421cdec2c9f2d8506eea369dfce8df7cc6964a244c9aad9cca6649ccbc9b", "6d6eb9caa061609392dea1746d7c5d8117f422c0521332b6e70f754b4fcb9e21"],
-				check = false;
-			
-			if(_.indexOf(loginableMember, Sha256.hash(name)) > -1){
-				check = true;
-			}
-			return check;
-		}
+
 		var login = function(){
 			msg.prompt("전화번호가 어떻게 되세요? (하이픈없이 숫자만 입력해 주세요.)", function(btn, phone){
 				if(/^[\d]{10,11}$/.test(phone)){
 					ajax.getAjaxObj().makeDatas({url:"member", data:{type:"login", phone:phone.toPhone()}}).run(function(after){
 						if(after.length > 0){
-							cookie.set("mylord", JSON.stringify(after[0]), 365*24*60);
-							topMenu.changeMenu("성가대원");	
+							cookie.set("mylordId", after[0].member_id+"", 365*24*60);								
 						}else{
 							msg.alert("해당 번호로 등록된 사용자가 없습니다.", function(){
-								login();	
+								login();
 							});
 						}
 					})
@@ -127,29 +139,18 @@
 				location.reload();
 			});
 		}
-		$(document).ready(function(){
- 			fnRecursive(50,
-				function(){return window.jsLodingComplate || false;},
-				function(){
-					userWindows.categoryWindow = loadWindow("page/bbs/category_window.jsp");
-					userWindows.memberWindow = loadWindow("page/member/member_window.jsp");
-					
-					$(".child_menu li[data-url]").on("click", function(){
-						var url = $(this).data("url");
-						
-						if($(this).data("type") === "window"){
-							var windowName = url.split("/").last().toCamel().split(".").removeLast().join("");
-							userWindows[windowName].show2();
-						}else{
-							window.userVars = {windows:{}};
-							window.userFns = {};
-							
-							$(".right_col").load(url);
-						}
-					}).css("cursor", "pointer");
-				}
-			);
-		});		 */
+		
+		var setAuth = function() {
+			var mylordId = cookie.get("mylordId"),
+				auth = {};
+			ajax.getAjaxObj().makeDatas({url:"officer", data:{member_id:mylordId, status:'Y'}}).run(function(afterDatas){
+				afterDatas.forEach(function(role){
+					auth[role.role] = 1;
+				});
+				
+				cookie.set("auth", _.keys(auth).join(","));
+			});
+		} 
 	</script>
 </head>
 <body>
@@ -168,11 +169,11 @@
 			<button class="icon-button" id="menuBtn"><i class="icon-menu"></i></button>
 			<label class="toolbar-label">마이로드</label>
 			<span class="float-right" id="switch-container">
-				<label class="form-control-label">로그아웃</label>
+				<label id="logout" class="form-control-label">로그아웃</label>
 			</span>	
 		</div>
 		<div class="navigation-section">
-			12312
+			휴대폰 번호로 로긴하세요~ 
 		</div>
 	</div>
 	

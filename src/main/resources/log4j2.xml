@@ -12,9 +12,9 @@
 		<Logger name="me.ahacross.mylord" level="DEBUG" additivity="true"/> 
 		
 		<!-- log SQL with timing information, post execution --> 
-		<!-- <Logger name="org.mybatis" level="DEBUG">
+		<Logger name="org.mybatis" level="DEBUG">
 			<AppenderRef ref="console" />
-		</Logger> -->
+		</Logger>
 		<!-- <Logger name="java.sql" level="DEBUG">
 			<AppenderRef ref="console" />
 		</Logger> -->

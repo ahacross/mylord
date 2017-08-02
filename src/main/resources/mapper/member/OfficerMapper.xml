@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="me.ahacross.mylord.officer.OfficerMapper">
+	<select id="getList" resultType="hashmap" parameterType="me.ahacross.mylord.officer.Officer">	
+		select 
+			member_id,	
+			year,
+			role,
+			status,
+			s_date,
+			e_date 
+		from 
+			officers 
+		<trim prefix="where" prefixOverrides="AND" >
+			year &gt;= (select DATE_FORMAT(now(), '%Y'))
+	    	<if test='member_id != null'>
+	    		and member_id = #{member_id}
+	    	</if>
+	    </trim>
+	</select>
+	
+	<select id="getOne" resultType="hashmap" parameterType="me.ahacross.mylord.officer.Officer">
+		select 
+			* 
+		from 
+			officers
+		<trim prefix="where" prefixOverrides="AND" >
+			year &gt;= (select DATE_FORMAT(now(), '%Y'))
+			<if test='member_id != null'>
+	    		and member_id = #{member_id}
+	    	</if>	    	
+	    	<if test='status != null'>
+	    		and status = #{status}
+	    	</if>
+		</trim>
+	</select>
+	
+	<insert id="insert" parameterType="me.ahacross.mylord.officer.Officer" >
+		insert into officers (member_id, year, role, status, s_date, e_date) 
+		(select #{member_id}, #{year}, #{role}, 'Y', #{s_date}, #{e_date})
+	</insert>
+	
+	<update id="update" parameterType="me.ahacross.mylord.officer.Officer" >
+		update officers  
+			<trim prefix="SET" suffixOverrides=",">				
+				<if test='status != null'>
+					status = #{status} ,
+				</if>
+				<if test='s_date != null'>
+					s_date = #{s_date} ,
+				</if>
+				<if test='e_date != null'>
+					e_date = #{e_date} ,
+				</if>				
+			</trim>
+		where member_id = #{member_id} and year = #{year}  and role = #{role}
+	</update>
+	
+	<delete id="delete" parameterType="me.ahacross.mylord.officer.Officer">
+		delete from 
+			officers 
+		where member_id = #{member_id} and year = #{year}  and role = #{role}
+	</delete>
+	
+</mapper>
