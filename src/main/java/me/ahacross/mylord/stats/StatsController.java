@@ -24,6 +24,16 @@ public class StatsController {
 	@RequestMapping(method = RequestMethod.GET)	
 	public Object getList(@ModelAttribute Stats stats) {
 		Object returnObj = null;
+		
+		int checkDate = 20161225;
+		if(stats.getStartDate() != null && stats.getStartDate().equals("") && stats.getEndDate() != null && stats.getEndDate().equals("")) {
+			if(Integer.parseInt(stats.getStartDate()) <= checkDate && Integer.parseInt(stats.getEndDate()) >= checkDate) {
+				String tempCond = stats.getAfterCheckCond();
+				tempCond = "|| (before_check='Y' and attendance_date='20161225') " + tempCond;
+				stats.setAfterCheckCond(tempCond);
+			}	
+		}
+		
 		if(stats.getType().equals("part")){
 			returnObj = statsService.getPart(stats);
 		}else {

@@ -57,14 +57,16 @@
 		
 		
 		var changeMenu = function(id) {
-			let url = "";
-			if(id === "status"){
-				
-			}else if(id === "facebook" || id === "practice") {
-				url = "page/link/" + id+".jsp";
+			let url = ["page"];
+			
+			if(id === "facebook" || id === "practice") {
+				url.push("link");
+			}else{
+				url.push(id);
 			}
 			
-			naviSectionArea.load(url);
+			url.push(id+".jsp");
+			naviSectionArea.load(url.join("/"));
 		}
 		
 		$(document).ready(function(){
@@ -83,37 +85,42 @@
 						}),
 						sm = document.getElementById("navigation-sidemenu");
 					
+					let menuRun = true;
 					if(cookie.get("mylordId") === ""){
 						naviSectionArea.html(naviSectionArea.html() + "<br> 사용자 정보가 없습니다. 휴대폰 번호를 입력해 주세요.");
 						login();
+						menuRun = false;
 					}
 					
-					if(cookie.get("mylordAuth") === ""){
+					if(menuRun && cookie.get("mylordAuth") === ""){
 						naviSectionArea.html(naviSectionArea.html() + "<br><br> 권한 정보를 설정합니다.");
 						setAuth();
 					}
 					
-					// 쿠키 체크
-					// 권한 체크					
-					
-					SideMenu.hide(sm);
 					$("#navigation-sidemenu").find(".menu > li:not(.divider)").on("click", "a", function(){
 						if (Responsive.device != "desktop") {
 							SideMenu.hide(sm);
 						}
 						
 						selectMenu($(this));
-						var id = $(this).attr("id");
-						console.log(id);
-						if(id !== "status") {
-							changeMenu(id);
-						}
+						changeMenu($(this).attr("id"));
 					});
-					$(".menu > li").first().find("a").click();
+					
+					if(menuRun) {
+						SideMenu.hide(sm);
+						$(".menu > li").first().find("a").click();	
+					}
 					
 					$("#menuBtn").on("click", function(){
 						SideMenu.toggle(sm);
 					});
+					
+					$("#logout").on("click", function(){
+						cookie.del("mylordId");
+						cookie.del("mylordAuth");
+						location.href = "/mylord";
+					}).css("cursor", "pointer");
+					
 				}
 			);
 		});
@@ -121,9 +128,10 @@
 		var login = function(){
 			msg.prompt("전화번호가 어떻게 되세요? (하이픈없이 숫자만 입력해 주세요.)", function(btn, phone){
 				if(/^[\d]{10,11}$/.test(phone)){
-					ajax.getAjaxObj().makeDatas({url:"member", data:{type:"login", phone:phone.toPhone()}}).run(function(after){
+					ajax.run({url:"member", data:{type:"login", phone:phone.toPhone()}}, function(after){
 						if(after.length > 0){
-							cookie.set("mylordId", after[0].member_id+"", 365*24*60);								
+							cookie.set("mylordId", after[0].member_id+"", 365*24*60);
+							location.href="";
 						}else{
 							msg.alert("해당 번호로 등록된 사용자가 없습니다.", function(){
 								login();
@@ -143,12 +151,12 @@
 		var setAuth = function() {
 			var mylordId = cookie.get("mylordId"),
 				auth = {};
-			ajax.getAjaxObj().makeDatas({url:"officer", data:{member_id:mylordId, status:'Y'}}).run(function(afterDatas){
+			ajax.run({url:"officer", data:{member_id:mylordId, status:'Y'}}, function(afterDatas){
 				afterDatas.forEach(function(role){
 					auth[role.role] = 1;
 				});
 				
-				cookie.set("auth", _.keys(auth).join(","));
+				cookie.set("mylordAuth", _.keys(auth).join(","));
 			});
 		} 
 	</script>

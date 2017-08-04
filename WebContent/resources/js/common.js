@@ -183,6 +183,12 @@ Date.prototype.format = function(f) {
     });
 };
 
+Date.prototype.getWeek = function() {    
+    var onejan = new Date(this.getFullYear(),0,1);
+    var today = new Date(this.getFullYear(),this.getMonth(),this.getDate());
+    var dayOfYear = ((today - onejan + 86400000)/86400000);
+    return Math.ceil(dayOfYear/7)
+}
 
 Date.prototype.minus = function(type, minus) {
     var dat = new Date(this.valueOf());
@@ -271,6 +277,10 @@ String.prototype.yyyymmddHHmmss = function(dateSeparator, timeSeparator){
 
 String.prototype.toFirstUpperCase = function(){
 	return this.charAt(0).toUpperCase() + this.substring(1);
+}
+
+String.prototype.toNum = function(){
+	return Number(this);
 }
 
 String.prototype.toPhone = function(){

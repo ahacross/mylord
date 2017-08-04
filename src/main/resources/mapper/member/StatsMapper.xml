@@ -65,18 +65,7 @@
 					${afterCheckCond}
 				</if>
 				), 1, 0)) 'after_cnt',
-				(select truncate(DATEDIFF(max(attendance_date), min(attendance_date)) / 7, 0) + 1 from member_attendance
-				<trim prefix="where" prefixOverrides="AND" >
-					<choose>
-						<when test='startDate != null and  endDate != null and startDate == endDate'>
-							attendance_date >= #{startDate}
-						</when>
-						<when test='startDate != null and  endDate != null and startDate != endDate'>
-							attendance_date between #{startDate} and #{endDate}
-						</when>
-					</choose>
-				</trim>				 
-				) week_cnt
+				truncate(DATEDIFF(max(attendance_date), min(attendance_date)) / 7, 0) + 1 week_cnt
 			from 
 				member m
 			left join member_attendance ma on ma.member_id = m.member_id			 
@@ -90,7 +79,7 @@
 					</when>
 				</choose>
 				<if test='member_id != null'>
-					and member_id = #{member_id}
+					and m.member_id = #{member_id}
 				</if>	    	
 			</trim>
 			group by member_id
