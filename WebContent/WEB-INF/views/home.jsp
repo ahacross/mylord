@@ -97,11 +97,8 @@
 						setAuth();
 					}
 					
-					$("#navigation-sidemenu").find(".menu > li:not(.divider)").on("click", "a", function(){
-						if (Responsive.device != "desktop") {
-							SideMenu.hide(sm);
-						}
-						
+					$("#navigation-sidemenu").find(".menu > li:not(.divider)").on("click", "a", function(){				
+						SideMenu.hide(sm);						
 						selectMenu($(this));
 						changeMenu($(this).attr("id"));
 					});
@@ -165,9 +162,9 @@
 	<div class="sidemenu sidebar responsive" id="navigation-sidemenu" hidden>	
 		<ul class="menu">
 			<li ripple><a class="pointer" id="status"><i class="icon-chart"></i>출석 현황</a></li>		
-			<li ripple><a class="pointer" id="infoMod"><i class="fa fa-user-circle" aria-hidden="true"></i>정보 수정</a></li>
+			<!-- <li ripple><a class="pointer" id="infoMod"><i class="fa fa-user-circle" aria-hidden="true"></i>정보 수정</a></li> -->
 			<li class="divider"></li>			
-			<li ripple><a class="pointer" id="songHistory"><i class="fa fa-book" aria-hidden="true"></i>했던 곡들</a></li>
+			<li ripple><a class="pointer" id="history"><i class="fa fa-book" aria-hidden="true"></i>했던 곡들</a></li>
 			<li ripple><a class="pointer" id="facebook"><i class="fa fa-facebook-official" aria-hidden="true"></i>페이스북</a></li>
 			<li ripple><a class="pointer" id="practice"><i class="icon-content-copy"></i>연습실</a></li>
 		</ul>

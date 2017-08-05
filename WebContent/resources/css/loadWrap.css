@@ -3,7 +3,9 @@
 @import url("../plugins/jquery-ui/jquery-ui.min.css");
 @import url("../plugins/font-awesome/css/font-awesome.css");
 @import url("../plugins/datepicker/css/pickmeup.css");	
-@import url("../plugins/c3/c3.min.css");	
+@import url("../plugins/c3/c3.min.css");
+@import url("../plugins/tui-date-picker/dist/tui-date-picker.css");
+@import url("../plugins/tui-grid/dist/tui-grid.css");
 @import url("../plugins/alertify/css/alertify.min.css");
 @import url("../plugins/alertify/css/themes/default.min.css");
 @import url("../plugins/jQuery.filer/css/jquery.filer.css");
