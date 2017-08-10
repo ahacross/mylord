@@ -125,7 +125,7 @@
 		var login = function(){
 			msg.prompt("전화번호가 어떻게 되세요? (하이픈없이 숫자만 입력해 주세요.)", function(btn, phone){
 				if(/^[\d]{10,11}$/.test(phone)){
-					ajax.run({url:"member", data:{type:"login", phone:phone.toPhone()}}, function(after){
+					ajax.run({url:"member", data:{type:"login", passwd:phone.toPhone()}}, function(after){
 						if(after.length > 0){
 							cookie.set("mylordId", after[0].member_id+"", 365*24*60);
 							location.href="";
@@ -162,11 +162,13 @@
 	<div class="sidemenu sidebar responsive" id="navigation-sidemenu" hidden>	
 		<ul class="menu">
 			<li ripple><a class="pointer" id="status"><i class="icon-chart"></i>출석 현황</a></li>		
-			<!-- <li ripple><a class="pointer" id="infoMod"><i class="fa fa-user-circle" aria-hidden="true"></i>정보 수정</a></li> -->
-			<li class="divider"></li>			
+			<li ripple><a class="pointer" id="infoMod"><i class="fa fa-user-circle" aria-hidden="true"></i>정보 수정</a></li>
+			<li class="divider"></li>
+			<li ripple style="display:none;"><a class="pointer" id="practice"><i class="icon-content-copy"></i>테스트</a></li>
 			<li ripple><a class="pointer" id="history"><i class="fa fa-book" aria-hidden="true"></i>했던 곡들</a></li>
 			<li ripple><a class="pointer" id="facebook"><i class="fa fa-facebook-official" aria-hidden="true"></i>페이스북</a></li>
 			<li ripple><a class="pointer" id="practice"><i class="icon-content-copy"></i>연습실</a></li>
+			<!-- <li ripple><a class="pointer" id="practice"><i class="icon-content-copy"></i>회비보고</a></li> -->			
 		</ul>
 	</div>
 	<div class="main-content">

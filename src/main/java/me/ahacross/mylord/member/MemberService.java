@@ -9,5 +9,4 @@ public interface MemberService {
 	public int insert(Member member);
 	public int update(Member member);
 	public int delete(Member member);
-	public Map<String, Object> login(Member member) ;
 }

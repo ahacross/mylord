@@ -20,4 +20,5 @@ public class Member {
 	private String regi_date;
 	private String role;
 	private Integer dues;
+	private String passwd;
 }

@@ -664,7 +664,7 @@ var query = {
 		this.datas = datas;
 	},
 	setHtml : function(){
-		var html = '<table class="width100">',
+		var html = '<table class="width100" border="1">',
 			header = this.header;
 		
 		html += '<thead><tr>';

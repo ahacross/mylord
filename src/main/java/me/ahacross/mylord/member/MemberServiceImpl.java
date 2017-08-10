@@ -14,37 +14,31 @@ public class MemberServiceImpl implements MemberService{
 	 
 	 @Override
 	 public List<Map<String, Object>> getList(Member member){
-		 MemberMapper memberMapper = session.getMapper(MemberMapper.class);
-		return memberMapper.getList(member);
+		 MemberMapper mapper = session.getMapper(MemberMapper.class);
+		return mapper.getList(member);
 	}
 
 	@Override
 	public Map<String, Object> getOne(Member member) {
-		MemberMapper memberMapper = session.getMapper(MemberMapper.class);
-		return memberMapper.getOne(member);
+		MemberMapper mapper = session.getMapper(MemberMapper.class);
+		return mapper.getOne(member);
 	}
 
 	@Override
 	public int insert(Member member) {
-		MemberMapper memberMapper = session.getMapper(MemberMapper.class);
-		return memberMapper.insert(member);
+		MemberMapper mapper = session.getMapper(MemberMapper.class);
+		return mapper.insert(member);
 	}
 
 	@Override
 	public int update(Member member) {
-		MemberMapper memberMapper = session.getMapper(MemberMapper.class);
-		return memberMapper.update(member);
+		MemberMapper mapper = session.getMapper(MemberMapper.class);
+		return mapper.update(member);
 	}
 
 	@Override
 	public int delete(Member member) {
-		MemberMapper memberMapper = session.getMapper(MemberMapper.class);
-		return memberMapper.delete(member);
-	}
-	
-	@Override
-	public Map<String, Object> login(Member member) {
-		MemberMapper memberMapper = session.getMapper(MemberMapper.class);
-		return memberMapper.login(member);
+		MemberMapper mapper = session.getMapper(MemberMapper.class);
+		return mapper.delete(member);
 	}
 }

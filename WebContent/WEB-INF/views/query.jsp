@@ -2,48 +2,59 @@
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags"%>
 <!DOCTYPE html>
 <html>
-<head>
-	<meta charset="UTF-8">
-	<title>쿼리 실행</title>
-	<spring:url value="/resources/js/plugins/jui/jui.css" var="juiCss" />
-	<spring:url value="/resources/js/plugins/jui/jennifer.theme.min.css" var="juiThemeCss" />
-	<spring:url value="/resources/js/plugins/jquery-ui/jquery-ui.min.css" var="jqueryUiCss" />
-	<spring:url value="/resources/js/plugins/font-awesome/css/font-awesome.css" var="fontawesomeCss" />
-	<spring:url value="/resources/js/plugins/jQuery.filer/css/jquery.filer.css" var="filerCss" />
-	<spring:url value="/resources/js/plugins/alertify/css/alertify.min.css" var="alertifyCss" />
-	<spring:url value="/resources/js/plugins/alertify/css/themes/default.min.css" var="alertifyDefaultCss" />
-	<spring:url value="/resources/css/main.css" var="mainCss" />
-	<spring:url value="/resources/js/plugins/lodash/lodash.js" var="lodashJS" />
-	<spring:url value="/resources/js/plugins/jquery/jquery.js" var="jqueryJS" />
-	<spring:url value="/resources/js/plugins/alertify/alertify.js" var="alertifyJS" />
-	<spring:url value="/resources/js/alertWrap.js" var="alertWrapJS" />
-	<spring:url value="/resources/js/common.js" var="commonJS" />
+<head>        
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+	<title>마이로드</title>
 	
-	<link rel="stylesheet" type="text/css" href="${juiCss }">
-	<link rel="stylesheet" type="text/css" href="${juiThemeCss }">
-	<link rel="stylesheet" type="text/css" href="${jqueryUiCss }">
-	<link rel="stylesheet" type="text/css" href="${fontawesomeCss }">
-	<link rel="stylesheet" type="text/css" href="${alertifyCss }">
-	<link rel="stylesheet" type="text/css" href="${alertifyDefaultCss }">
-	<link rel="stylesheet" type="text/css" href="${mainCss }">
+	<spring:url value="/resources/css/loadWrap.css" var="loadWrapCSS" />
+	<link rel="stylesheet" type="text/css" href="${loadWrapCSS }">
 	
-	<script type="text/javascript" src="${lodashJS }"></script>
-	<script type="text/javascript" src="${jqueryJS }"></script>	
-	<script type="text/javascript" src="${alertifyJS }"></script>
-	<script type="text/javascript" src="${alertWrapJS }"></script>
-	<script type="text/javascript" src="${commonJS }"></script>
-	<style type="text/css">
-		td {
-		border : 1px solid;
+	<spring:url value="/resources/plugins/jquery/jquery.js" var="jqueryJS" />
+	<script type="text/javascript" src="${jqueryJS }"></script>
+	
+	<spring:url value="/resources/plugins/LAB/LAB.js" var="LABJs" />
+	<script type="text/javascript" src="${LABJs }"></script>
+	
+	<spring:url value="/resources/js/loadWrap.js" var="loadWrapJS" />
+	<script type="text/javascript" src="${loadWrapJS }"></script>
+	
+	<spring:url value="/resources/js/html5/html5shiv.js" var="html5shivJs" />
+	<spring:url value="/resources/js/html5/respond.min.js" var="respondJs" />
+	<!--[if lt IE 9]>
+	<script type="text/javascript" src="${html5shivJs}"></script>
+	<script type="text/javascript" src="${respondJs }"></script>
+	<![endif]-->
+	<script>
+	$.wait = function(time) {
+		var defer = $.Deferred();
+		setTimeout(defer.resolve, time);   
+		return defer.promise();
+	}
+ 
+	// 재귀함수  // 사용예제는 bomTable.js 에 있음.
+	var fnRecursive = function(delayTime, checkFn, actionFn, target){
+		if(checkFn(target)){
+			return actionFn(target);
+		}else{
+			$.wait(delayTime).then(function(){
+				fnRecursive(delayTime, checkFn, actionFn, target);
+			});
 		}
-	</style>
+	}
+	</script>
 </head>
-<body class="jui" style="margin:5px;">
-	<textarea name="header" rows="2" style="width:95%;" readonly="readonly"></textarea>
-	<textarea name="query" rows="10" style="width:95%;"></textarea>
-	<a class="btn" id="run">실행</a>	
-	<div id="resultArea">
-	</div>
+<body>
+	<div style="display: flex;flex-direction: row;">
+        <div style="flex: auto;">
+            <textarea name="header" rows="2" style="width: 100%;" disabled="disabled"></textarea>
+            <textarea name="query" rows="10" style="width: 100%;"></textarea>    
+        </div>
+		<div style="width: 5rem;position: relative;top: 100px;left: 15px;">
+            <button class="button raised" id="run">실행</button>
+        </div>
+    </div>	
+	<div id="resultArea"></div>
 <script>
 	$(document).ready(function(){
 		$("#run").on("click", function(){
@@ -56,11 +67,9 @@
 				}else{
 					$("#resultArea").html(query.noData());
 				}
-				
 			});
 		});
 	});
-	
 </script>
 </body>
 </html>

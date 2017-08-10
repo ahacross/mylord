@@ -21,6 +21,9 @@
 	    	<if test='phone != null'>
 	    		phone = #{phone}
 	    	</if>
+	    	<if test='passwd != null'>
+	    		passwd = #{passwd}
+	    	</if>
 	    	<if test='birthday != null'>
 	    		and birthday like '____${birthday}%'
 	    	</if>
@@ -48,8 +51,8 @@
 	</select>
 	
 	<insert id="insert" parameterType="me.ahacross.mylord.member.Member" >
-		insert into member (member_id, name, phone, part, birthday, email, regi_date, comment) 
-		(select max(member_id) + 1 , #{name}, #{phone}, #{part}, #{birthday}, #{email}, #{regi_date}, #{comment} from member )		
+		insert into member (member_id, name, phone, part, birthday, email, regi_date, comment, passwd) 
+		(select max(member_id) + 1 , #{name}, #{phone}, #{part}, #{birthday}, #{email}, #{regi_date}, #{comment}, #{phone} from member )		
 	</insert>
 	
 	<update id="update" parameterType="me.ahacross.mylord.member.Member" >
@@ -81,7 +84,10 @@
 				</if>
 				<if test='comment != null'>
 					comment = #{comment}
-				</if>				
+				</if>
+				<if test='passwd != null'>
+					passwd = #{passwd}
+				</if>
 			</trim>			
 		where member_id = #{member_id}
 	</update>
@@ -90,15 +96,5 @@
 		delete from 
 			member 
 		where member_id = #{member_id}
-	</delete>
-	
-	<select id="login" resultType="hashmap" parameterType="me.ahacross.mylord.member.Member">
-		select 
-		  m.member_id,
-		  concat ('ROLE_USER',  case when auth = 'Y' then ',ROLE_ADMIN' end ) role
-		from 
-		  member m
-		left join member_manager mm on m.member_id = mm.member_id and mm.term_range_e is null
-		where m.phone = #{phone}	
-	</select>
+	</delete>	
 </mapper>

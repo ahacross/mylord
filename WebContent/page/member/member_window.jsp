@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<div id="memberWindow" class="window jui">
+<div id="memberWindow" class="window">
 	<div class="head hide">
 		<div class="left">성가대원 추가</div>
 	</div>
@@ -104,7 +104,6 @@ $(document).ready(function(){
 		}
 	}
 	
-	console.log(Content);
 	var save = function(){
 		//if(Content.find("[name=phone]").){
 			//Content.find("[name=phone]").blur();
