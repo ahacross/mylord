@@ -7,7 +7,6 @@ canvas {
 }
 </style>
 <div class="panel">
-
 	<table id="statusTable" style="width:100%;">
 		<tr>
 			<td style="width:40%;text-align: center;vertical-align: middle">

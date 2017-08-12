@@ -59,7 +59,7 @@
 		var changeMenu = function(id) {
 			let url = ["page"];
 			
-			if(id === "facebook" || id === "practice") {
+			if(id === "facebook" || id === "practice" || id==="infoMod") {				
 				url.push("link");
 			}else{
 				url.push(id);
@@ -74,6 +74,8 @@
 				function(){return window.jsLodingComplate || false;},
 				function(){
 					delete window.jsLodingComplate;
+					
+					
 					window.naviSectionArea  = $(".navigation-section");
 					var md = new Material({
 							options: {
@@ -117,7 +119,6 @@
 						cookie.del("mylordAuth");
 						location.href = "/mylord";
 					}).css("cursor", "pointer");
-					
 				}
 			);
 		});
@@ -125,21 +126,18 @@
 		var login = function(){
 			msg.prompt("전화번호가 어떻게 되세요? (하이픈없이 숫자만 입력해 주세요.)", function(btn, phone){
 				if(/^[\d]{10,11}$/.test(phone)){
-					ajax.run({url:"member", data:{type:"login", passwd:phone.toPhone()}}, function(after){
-						if(after.length > 0){
-							cookie.set("mylordId", after[0].member_id+"", 365*24*60);
-							location.href="";
-						}else{
-							msg.alert("해당 번호로 등록된 사용자가 없습니다.", function(){
-								login();
-							});
-						}
-					})
-				}else{
-					msg.alert("전화번호가 아닙니다.", function(){
-						login();
-					})
+					phone = phone.toPhone();
 				}
+				ajax.run({url:"member", data:{type:"login", passwd:phone}}, function(after){
+					if(after.length > 0){
+						cookie.set("mylordId", after[0].member_id+"", 365*24*60);
+						location.href="";
+					}else{
+						msg.alert("해당 번호로 등록된 사용자가 없습니다.", function(){
+							login();
+						});
+					}
+				});
 			}, function(){
 				location.reload();
 			});
