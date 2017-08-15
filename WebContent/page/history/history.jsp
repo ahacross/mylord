@@ -78,15 +78,16 @@
 			},{
 				title:"연습",
 				name:"practice",
-				width:40,
+				width:30,
 				formatter:function(value) {
-					return (value === undefined)?'':'<a href="http://192.168.50.50/practice.html?url='+value+'" target="_blank">연습</a>'; 
+					return (value === undefined)?'':'<a href="http://ahacross.me/practice.html?url='+value+'" target="_blank">연습</a>'; 
 				}
 			}
 		];
 	}
 
-	var gridHistoryGrid;
+	var historyGrid,
+		historyGridData;
 	
 	var setGrid = function(){
 		ajax.run({url:"history"}, function(after){
@@ -100,8 +101,8 @@
 				columns = getSimpleColumns();
 			}
 			
-			if(gridHistoryGrid) {
-				gridHistoryGrid.destroy();
+			if(historyGrid) {
+				historyGrid.destroy();
 			}
 			
 			if(cookie.get("mylordAuth").indexOf("임원") > -1){
@@ -110,9 +111,10 @@
 				} 
 			}
 						
-			gridHistoryGrid = makeGrid({el:$('#gridHistory'), data: after, columns: columns});
+			historyGrid = makeGrid({el:$('#gridHistory'), data: after, columns: columns});
+			historyGridData = deepCopy(historyGrid.getRows());
 			
-			gridHistoryGrid.on('click', function(e) {
+			historyGrid.on('click', function(e) {
 				if(cookie.get("mylordAuth").indexOf("임원") > -1){
 					if(e.columnName === "title") {
 						historyWindowOpen("update", e.instance.getRow(e.rowKey));
@@ -128,12 +130,12 @@
 	$("#switch").on("change", setGrid);
 
 	setTimeout(function(){
-		gridHistoryGrid.refreshLayout();	
+		historyGrid.refreshLayout();	
 	}, 500);
 
 	const historyWindowOpen = function(type, row) {
 		const targetWindow = userWindows.historyWindow;
-		const params = {type:type};
+		let params = {type:type};
 		
 		if(row) {
 			params.row = row;
@@ -149,7 +151,8 @@
 	$("[name=search]").on("keyup", function(event){
 		if(event.keyCode === 13){
 			const search = $(this).val().trim();
-			gridHistoryGrid.resetData(gridHistoryGrid.getRows().filter(row => (row.title+"").indexOf(search) > -1)); 
+			let rows = historyGridData.filter(row => (row.title+"").indexOf(search) > -1);
+			historyGrid.resetData(rows);
 		}		
 	});
 	
