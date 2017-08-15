@@ -46,6 +46,8 @@
 	
 	<script>
 		window.userWindows = {};
+		window.userVars = {};
+		window.userFns = {};
 		
 		var selectMenu = function(that){
 			var classNames = "selected color-blue-500";
@@ -94,9 +96,23 @@
 						menuRun = false;
 					}
 					
-					if(menuRun && cookie.get("mylordAuth") === ""){
+					if(menuRun){
 						naviSectionArea.html(naviSectionArea.html() + "<br><br> 권한 정보를 설정합니다.");
-						setAuth();
+						
+						Promise.resolve()
+					    	.then(setAuth)
+					    	.then(auth => {
+					    		let authHtml = '';					    		
+					    		if(auth.indexOf("임원") > -1) {
+					    			authHtml += '<li class="divider"></li>';
+					    			authHtml += '<li ripple><a class="pointer" id="officer"><i class="icon-content-copy"></i>임원 명단</a></li>';
+					    		}
+					    		
+					    		if(auth !== ''){
+					    			$("#navigation-sidemenu .menu").append(authHtml);	
+					    		}
+					    	}
+					    );
 					}
 					
 					$("#navigation-sidemenu").find(".menu > li:not(.divider)").on("click", "a", function(){				
@@ -144,14 +160,17 @@
 		}
 		
 		var setAuth = function() {
-			var mylordId = cookie.get("mylordId"),
-				auth = {};
-			ajax.run({url:"officer", data:{member_id:mylordId, status:'Y'}}, function(afterDatas){
-				afterDatas.forEach(function(role){
-					auth[role.role] = 1;
+			return new Promise(function(resolve, reject) {
+				ajax.run({url:"officer", data:{member_id: cookie.get("mylordId"), status:'Y'}}, function(afterDatas){
+					let auth = {};
+					afterDatas.forEach(function(role){
+						auth[role.role] = 1;
+					});
+					const myloadAuth = _.keys(auth).join(",");					
+					
+					cookie.set("mylordAuth", myloadAuth);
+					resolve(myloadAuth);
 				});
-				
-				cookie.set("mylordAuth", _.keys(auth).join(","));
 			});
 		} 
 	</script>
@@ -166,7 +185,8 @@
 			<li ripple><a class="pointer" id="history"><i class="fa fa-book" aria-hidden="true"></i>했던 곡들</a></li>
 			<li ripple><a class="pointer" id="facebook"><i class="fa fa-facebook-official" aria-hidden="true"></i>페이스북</a></li>
 			<li ripple><a class="pointer" id="practice"><i class="icon-content-copy"></i>연습실</a></li>
-			<!-- <li ripple><a class="pointer" id="practice"><i class="icon-content-copy"></i>회비보고</a></li> -->			
+			<!-- <li ripple><a class="pointer" id="practice"><i class="icon-content-copy"></i>회비보고</a></li> -->
+			
 		</ul>
 	</div>
 	<div class="main-content">

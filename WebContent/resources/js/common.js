@@ -485,11 +485,9 @@ var initAdd = function(target){
 
 var initMod = function(targetDom, datas){
 	var keys = Object.keys(datas), 
-			i = 0, 
-			n = keys.length,
-			key;
+		key;
 	
-	for(;i<n; i++){
+	for(let i=0, n=keys.length; i<n; i++){
 		key = keys[i];
 		targetDom.find("[name="+key+"]").val(datas[key]||"");
 	}
@@ -641,21 +639,17 @@ var compare = (function(){
 	}
 }());
 
-$.wait = function(time) {
-	var defer = $.Deferred();
-	setTimeout(defer.resolve, time);   
-	return defer.promise();
+
+var makeFormDatas = function(fields){
+	var datas = {};
+	fields.serializeArray().forEach(function(field){
+		datas[field.name] = field.value;
+	});
+	return datas;
 }
 
-// 재귀함수  // 사용예제는 bomTable.js 에 있음.
-var fnFactorial = function(delayTime, checkFn, actionFn, target){
-	if(checkFn(target)){
-		return actionFn(target);
-	}else{
-		$.wait(delayTime).then(function(){
-			fnFactorial(delayTime, checkFn, actionFn, target);
-		});
-	}
+var deepCopy = function(obj) {
+	return JSON.parse(JSON.stringify(obj));
 }
 
 var query = {			
