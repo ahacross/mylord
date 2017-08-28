@@ -4,20 +4,30 @@
 <mapper namespace="me.ahacross.mylord.officer.OfficerMapper">
 	<select id="getList" resultType="hashmap" parameterType="me.ahacross.mylord.officer.Officer">	
 		select 
-			member_id,	
+			name,
+			part,
+			o.member_id,				
 			year,
 			role,
-			status,
+			o.status,
 			s_date,
-			e_date 
+			e_date,
+			o.etc
 		from 
-			officers 
-		<trim prefix="where" prefixOverrides="AND" >
-			year &gt;= (select DATE_FORMAT(now(), '%Y'))
+			officers o 
+			join member m on o.member_id = m.member_id
+		<trim prefix="where" prefixOverrides="AND" >			
 	    	<if test='member_id != null'>
-	    		and member_id = #{member_id}
+	    		and o.member_id = #{member_id}
+	    	</if>
+	    	<if test='role != null'>
+	    		and role = #{role}
+	    	</if>
+	    	<if test='status != null'>
+	    		and o.status = #{status}
 	    	</if>
 	    </trim>
+	    order by year, role
 	</select>
 	
 	<select id="getOne" resultType="hashmap" parameterType="me.ahacross.mylord.officer.Officer">
@@ -29,7 +39,13 @@
 			year &gt;= (select DATE_FORMAT(now(), '%Y'))
 			<if test='member_id != null'>
 	    		and member_id = #{member_id}
-	    	</if>	    	
+	    	</if>
+	    	<if test='year != null'>
+	    		and year = #{year}
+	    	</if>
+	    	<if test='role != null'>
+	    		and role = #{role}
+	    	</if>
 	    	<if test='status != null'>
 	    		and status = #{status}
 	    	</if>
@@ -37,8 +53,8 @@
 	</select>
 	
 	<insert id="insert" parameterType="me.ahacross.mylord.officer.Officer" >
-		insert into officers (member_id, year, role, status, s_date, e_date) 
-		(select #{member_id}, #{year}, #{role}, 'Y', #{s_date}, #{e_date})
+		insert into officers (member_id, year, role, status, s_date, e_date, etc) 
+		(select #{member_id}, #{year}, #{role}, 'Y', #{s_date}, #{e_date}, #{etc})
 	</insert>
 	
 	<update id="update" parameterType="me.ahacross.mylord.officer.Officer" >
@@ -52,7 +68,10 @@
 				</if>
 				<if test='e_date != null'>
 					e_date = #{e_date} ,
-				</if>				
+				</if>
+				<if test='etc != null'>
+					etc = #{etc} ,
+				</if>
 			</trim>
 		where member_id = #{member_id} and year = #{year}  and role = #{role}
 	</update>

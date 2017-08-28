@@ -411,3 +411,36 @@ body:not(.tui-grid-container)::-webkit-scrollbar-thumb {height: 50px; width: 50p
 	background: inherit;
 }
 /* slickgrid º¸Á¤ ³¡ */
+
+
+.tui-datepicker-footer .tui-timepicker {
+	padding : 20px 10px;
+	border-top: 1px solid #ddd;
+}
+
+.tui-calendar .tui-calendar-body-inner,
+.tui-calendar .tui-calendar-title-today {
+	font-size: 14px;
+}
+
+.tui-calendar td, .tui-calendar th {
+	color: #777;
+}
+
+.tui-calendar-body-inner tbody .tui-calendar-sun {
+	color: #ee4646;
+}
+
+.tui-datepicker .tui-is-blocked {
+	color: #777;
+    opacity: 0.5;
+}
+
+.picker-container {
+	position: absolute;
+	z-index: 3000;
+}
+
+.tui-datepicker-footer select {
+	font-size: initial;
+}

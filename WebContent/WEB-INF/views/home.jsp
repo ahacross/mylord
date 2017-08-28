@@ -49,6 +49,13 @@
 		window.userVars = {};
 		window.userFns = {};
 		
+		let partMap = {};
+		partMap["s"] = "소프라노";
+		partMap["a"] = "알토";
+		partMap["t"] = "테너";
+		partMap["b"] = "베이스";
+		userVars.partMap = partMap;
+		
 		var selectMenu = function(that){
 			var classNames = "selected color-blue-500";
 			
@@ -61,7 +68,7 @@
 		var changeMenu = function(id) {
 			let url = ["page"];
 			
-			if(id === "facebook" || id === "practice" || id==="infoMod") {				
+			if(id === "etc" || id==="infoMod") {				
 				url.push("link");
 			}else{
 				url.push(id);
@@ -105,7 +112,7 @@
 					    		let authHtml = '';					    		
 					    		if(auth.indexOf("임원") > -1) {
 					    			authHtml += '<li class="divider"></li>';
-					    			authHtml += '<li ripple><a class="pointer" id="officer"><i class="icon-content-copy"></i>임원 명단</a></li>';
+					    			authHtml += '<li ripple><a class="pointer" id="officer"><i class="fa fa-users" aria-hidden="true"></i>임원 명단</a></li>';
 					    		}
 					    		
 					    		if(auth !== ''){
@@ -115,7 +122,7 @@
 					    );
 					}
 					
-					$("#navigation-sidemenu").find(".menu > li:not(.divider)").on("click", "a", function(){				
+					$("#navigation-sidemenu .menu").on("click", "> li:not(.divider) a", function(){				
 						SideMenu.hide(sm);						
 						selectMenu($(this));
 						changeMenu($(this).attr("id"));
@@ -144,7 +151,7 @@
 				if(/^[\d]{10,11}$/.test(phone)){
 					phone = phone.toPhone();
 				}
-				ajax.run({url:"member", data:{type:"login", passwd:phone}}, function(after){
+				ajax.run({url:"member", data:{type:"login", phone:phone}}, function(after){
 					if(after.length > 0){
 						cookie.set("mylordId", after[0].member_id+"", 365*24*60);
 						location.href="";
@@ -181,11 +188,9 @@
 			<li ripple><a class="pointer" id="status"><i class="icon-chart"></i>출석 현황</a></li>		
 			<li ripple><a class="pointer" id="infoMod"><i class="fa fa-user-circle" aria-hidden="true"></i>정보 수정</a></li>
 			<li class="divider"></li>
-			<li ripple style="display:none;"><a class="pointer" id="practice"><i class="icon-content-copy"></i>테스트</a></li>
 			<li ripple><a class="pointer" id="history"><i class="fa fa-book" aria-hidden="true"></i>했던 곡들</a></li>
-			<li ripple><a class="pointer" id="facebook"><i class="fa fa-facebook-official" aria-hidden="true"></i>페이스북</a></li>
-			<li ripple><a class="pointer" id="practice"><i class="icon-content-copy"></i>연습실</a></li>
-			<!-- <li ripple><a class="pointer" id="practice"><i class="icon-content-copy"></i>회비보고</a></li> -->
+			<li ripple><a class="pointer" id="etc"><i class="icon-content-copy"></i>기타 정보들</a></li>
+			<!-- <li ripple><a class="pointer" id="etc"><i class="icon-content-copy"></i>회비보고</a></li> -->
 			
 		</ul>
 	</div>

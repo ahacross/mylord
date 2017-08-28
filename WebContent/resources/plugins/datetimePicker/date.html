@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="./tui-time-picker/dist/tui-time-picker.css"/>
+        <link rel="stylesheet" href="./tui-date-picker/dist/tui-date-picker.css"/>
+        <style>
+.tui-datepicker-footer .tui-timepicker {
+	padding : 20px 10px;
+	border-top: 1px solid #ddd;
+}
+
+.tui-calendar .tui-calendar-body-inner,
+.tui-calendar .tui-calendar-title-today {
+	font-size: 14px;
+}
+
+.tui-calendar td, .tui-calendar th {
+	color: #777;
+}
+
+.tui-calendar-body-inner tbody .tui-calendar-sun {
+	color: #ee4646;
+}
+
+.picker-container {
+	position: absolute;
+	z-index: 3000;
+}
+
+        </style>
+        <script src="./jquery/jquery.js"></script>
+        <script src="./tui-code-snippet/dist/tui-code-snippet.min.js"></script>
+        <script src="./tui-time-picker/dist/tui-time-picker.js"></script>
+        <script src="./tui-date-picker/dist/tui-date-picker.js"></script>
+    </head>
+    <body>
+        <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
+            <input type="text" id="datepicker-input" aria-label="Date-Time">
+            <span class="tui-ico-date"></span>
+        </div>
+        <br/>
+        <br/>
+        <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
+            <input id="startpicker-input" type="text" aria-label="Date">
+            <span class="tui-ico-date"></span>
+        </div>
+        <span>to</span>
+        <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
+            <input id="endpicker-input" type="text" aria-label="Date">
+            <span class="tui-ico-date"></span>
+        </div>
+        <script>
+            var datepicker = new tui.DatePicker('#wrapper', {
+                date: new Date(),
+                language: 'ko',
+                input: {
+                    element: '#datepicker-input',
+                    format: 'yyyy-MM-dd HH:mm:ss'
+                },
+                timepicker: {
+                    showMeridiem:false
+                }
+            });
+
+                var today = new Date();
+                var picker = tui.DatePicker.createRangePicker({
+                    language: 'ko',
+                    format: 'yyyy-MM-dd HH:mm:ss',
+                    startpicker: {
+                        date: today,
+                        input: '#startpicker-input',
+                        container: '#startpicker-container'
+                    },
+                    endpicker: {
+                        date: today,
+                        input: '#endpicker-input',
+                        container: '#endpicker-container'
+                    },
+                    selectableRanges: [
+                        [today, new Date(today.getFullYear() + 1, today.getMonth(), today.getDate())]
+                    ],
+                    timepicker: {
+                        showMeridiem:false
+                    }
+                });
+        </script>
+    </body>
+</html>

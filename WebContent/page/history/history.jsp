@@ -31,16 +31,6 @@
 		
 	}
 
-	const makeGrid = function(params) {
-		var grid = new tui.Grid({
-		    el: params.el,
-		    data: params.data,
-		    bodyHeight:window.innerHeight -125,	    
-		    columns: params.columns
-		});
-		return grid;
-	}
-
 	const getAddColumns = function(){
 		return [
 			{			
@@ -50,7 +40,7 @@
 				title:"악보자료",
 				name:"scanning",
 				formatter:function(value) {
-					return (value === undefined)?'':'<a href="'+value+'" target="_blank">'+value+'</a>';
+					return (value)?'<a href="'+value+'" target="_blank">'+value+'</a>':'';
 				}
 			
 			},{
@@ -73,65 +63,65 @@
 				title:"부른 영상",
 				name:"link",
 				formatter:function(value) {
-					return (value === undefined)?'':'<a href="'+value+'" target="_blank">'+value+'</a>';
+					return (value)?'<a href="'+value+'" target="_blank">'+value+'</a>':'';
 				}
 			},{
 				title:"연습",
 				name:"practice",
 				width:30,
 				formatter:function(value) {
-					return (value === undefined)?'':'<a href="http://ahacross.me/practice.html?url='+value+'" target="_blank">연습</a>'; 
+					return (value)?'<a href="http://ahacross.me/practice.html?url='+value+'" target="_blank">연습</a>':''; 
 				}
 			}
 		];
 	}
 
-	var historyGrid,
-		historyGridData;
+	var getColumns = function(){
+		const txtDom = $("#switchTxt");
+		let columns;
+		if($("#switch").prop("checked")){
+			txtDom.text("상세필드");
+			columns = getSimpleColumns().concat(getAddColumns());
+		}else{
+			txtDom.text("간단필드");
+			columns = getSimpleColumns();
+		}
+		
+		if(cookie.get("mylordAuth").indexOf("임원") > -1){
+			columns[1].formatter = function(value) {
+				return '<a class="pointer">'+value+'</a>';
+			} 
+		}
+		return columns;
+	}
 	
+	
+	var historyGrid;
 	var setGrid = function(){
-		ajax.run({url:"history"}, function(after){
-			const txtDom = $("#switchTxt");
-			let columns;
-			if($("#switch").prop("checked")){
-				txtDom.text("상세필드");
-				columns = getSimpleColumns().concat(getAddColumns());
-			}else{
-				txtDom.text("간단필드");
-				columns = getSimpleColumns();
-			}
-			
-			if(historyGrid) {
-				historyGrid.destroy();
-			}
-			
+		historyGrid = tuiGrid.makeGrid({el:$('#gridHistory'), data: [], columns: getColumns()});
+		
+		historyGrid.on('click', function(e) {
 			if(cookie.get("mylordAuth").indexOf("임원") > -1){
-				columns[1].formatter = function(value) {
-					return '<a class="pointer">'+value+'</a>';
-				} 
-			}
-						
-			historyGrid = makeGrid({el:$('#gridHistory'), data: after, columns: columns});
-			historyGridData = deepCopy(historyGrid.getRows());
-			
-			historyGrid.on('click', function(e) {
-				if(cookie.get("mylordAuth").indexOf("임원") > -1){
-					if(e.columnName === "title") {
-						historyWindowOpen("update", e.instance.getRow(e.rowKey));
-					}
+				if(e.columnName === "title") {
+					historyWindowOpen("update", e.instance.getRow(e.rowKey));
 				}
-		    });
-			
-		});
+			}
+	    });
 	}
 	setGrid();
-	userFns.setGridHistory = setGrid;
 	
-	$("#switch").on("change", setGrid);
-
-	setTimeout(function(){
-		historyGrid.refreshLayout();	
-	}, 500);
+	var setGridData = function(){
+		ajax.run({url:"history"}, function(after){
+			historyGrid.resetData(after);
+			historyGrid.datas = deepCopy(after);
+		});
+	}
+	setGridData();
+	userFns.setGridHistory = setGridData;
+	
+	$("#switch").on("change", function(){
+		historyGrid.setColumns(getColumns());
+	});
 
 	const historyWindowOpen = function(type, row) {
 		const targetWindow = userWindows.historyWindow;
@@ -151,7 +141,7 @@
 	$("[name=search]").on("keyup", function(event){
 		if(event.keyCode === 13){
 			const search = $(this).val().trim();
-			let rows = historyGridData.filter(row => (row.title+"").indexOf(search) > -1);
+			let rows = historyGrid.datas.filter(row => (row.title+"").indexOf(search) > -1);
 			historyGrid.resetData(rows);
 		}		
 	});

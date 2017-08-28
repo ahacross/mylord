@@ -11,10 +11,10 @@
 			<td class="thB">폰 번호</td>
 			<td><input type="text"  class="text-input width100" name="phone" placeholder="01011112222" maxlength="13"/></td>
 		</tr>
-		<tr>
+		<!-- <tr>
 			<td class="thB">비밀번호</td>
 			<td><input type="text" class="text-input width100" name="passwd" /></td>
-		</tr>
+		</tr> -->
 		<tr>
 			<td class="thB">생일</td>
 			<td><input type="date" class="text-input width100" name="birthday" /></td>

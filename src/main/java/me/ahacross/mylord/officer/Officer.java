@@ -14,4 +14,5 @@ public class Officer {
 	private String status;
 	private String s_date; 
 	private String e_date;
+	private String etc;
 }

@@ -17,19 +17,19 @@
 		</Logger>
 		<!-- <Logger name="java.sql" level="DEBUG">
 			<AppenderRef ref="console" />
-		</Logger> -->
-		<!-- <logger name="jdbc.sqltiming" level="INFO" additivity="true"> 
+		</Logger>
+		<logger name="jdbc.sqltiming" level="INFO" additivity="true"> 
 			<appender-ref ref="console" /> 
-		</logger> --> 
+		</logger> 
 		<logger name="org.springframework" level="INFO" additivity="true"> 
 			<appender-ref ref="console" /> 
 		</logger> 
-		<!-- <logger name="java.sql.ResultSet" level="DEBUG" additivity="true"> 
+		<logger name="java.sql.ResultSet" level="INFO" additivity="true"> 
 			<appender-ref ref="console" /> 
-		</logger>  -->
+		</logger>-->
 		<Root level="info"> 
-<!-- 		 	<AppenderRef ref="console"/>
- -->            <AppenderRef ref="FILE"/>
+		 	<AppenderRef ref="console"/>
+	        <AppenderRef ref="FILE"/>
 		</Root> 
 </Loggers> 
 </Configuration>

@@ -4,6 +4,7 @@
 @import url("../plugins/font-awesome/css/font-awesome.css");
 @import url("../plugins/datepicker/css/pickmeup.css");	
 @import url("../plugins/c3/c3.min.css");
+@import url("../plugins/tui-time-picker/dist/tui-time-picker.css");
 @import url("../plugins/tui-date-picker/dist/tui-date-picker.css");
 @import url("../plugins/tui-grid/dist/tui-grid.css");
 @import url("../plugins/alertify/css/alertify.min.css");
