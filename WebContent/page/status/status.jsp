@@ -60,6 +60,14 @@ function getToday() {
     });
 }
 
+function getMemberInfo() {
+    return new Promise(function(resolve, reject) {
+    	ajax.run({url:"member/"+cookie.get("mylordId")}, function(member){
+    		resolve(member);
+    	});
+    });
+}
+
 var setGaugeChart = function(bind, columns){
 	c3.generate({
 		bindto : bind,
@@ -103,73 +111,65 @@ var rateToNum = function(rate){
 	return rate.split("%").join("").toNum();
 }
  
-Promise.resolve()
-    .then(getToday)
-    .then(today => {
-    	const toDay = new Date(today);
+var setChartData = function(datas){
+	ajax.run(datas, function(after, before){
+		console.log(before.startDate, before.endDate);
+		const beforeRate = rateToNum(after.first().before_rate);
+		const afterRate = rateToNum(after.first().after_rate);
+		
+		setGaugeChart(before.targetId, [['출석', beforeRate]]);
+		setGaugeChart(before.targetId.split("before").join("after"),[['출석', afterRate]]);
+	});
+}
+ 
+//Promise.resolve()
+//    .then(getToday)
+//    .then(today, member => {
+Promise.all([getToday(), getMemberInfo()])	
+	 .then(value => {
+    	const toDay = new Date(value[0]);
+    	const member = value[1];
     	const endDate = toDay.format("yyyyMMdd");
     	const memberId = cookie.get("mylordId");
+    	let ajaxData = {
+    		url:"stats",
+    		data:{
+    			type:"one",   				 
+   				endDate:endDate,
+   				member_id: memberId   				
+    		}
+    	};
     	
-    	// 4week
-    	ajax.run({
-    			url:"stats", 
-    			data:{
-    				type:"one",
-    				startDate:(toDay.minus("date", toDay.getDay() + 3 * 7)).format("yyyyMMdd"), 
-    				endDate:endDate,
-    				member_id: memberId
-    			}
-    		},
-    		function(after){
-    			const beforeRate = rateToNum(after.first().before_rate);
-    			const afterRate = rateToNum(after.first().after_rate);
-    			
-    			setGaugeChart("#before4week", [['출석', beforeRate]]);
-    			setGaugeChart("#after4week",[['출석', afterRate]]);
-    		}
-    	);
-    	// 12week
-    	ajax.run({
-    			url:"stats", 
-    			data:{
-    				type:"one",
-    				startDate:(toDay.minus("date", toDay.getDay() + 11 * 7)).format("yyyyMMdd"), 
-    				endDate:endDate,
-    				member_id: memberId
-    			}
-    		},
-    		function(after){
-    			const beforeRate = rateToNum(after.first().before_rate);
-    			const afterRate = rateToNum(after.first().after_rate);
-    			
-    			setGaugeChart("#before12week", [['출석', beforeRate]]);
-    			setGaugeChart("#after12week",[['출석', afterRate]]);
-    		}
-    	);
+    	let regiDate = Number(member.regi_date || "20160101");
     	
-    	// thisyear
-    	ajax.run({
-    			url:"stats", 
-    			data:{
-    				type:"one",
-    				startDate:(toDay.minus("date", (toDay.getWeek() - 1) * 7 + toDay.getDay())).format("yyyyMMdd"), 
-    				endDate:endDate,
-    				member_id: memberId
-    			}
-    		},
-    		function(after){
-    			const beforeRate = rateToNum(after.first().before_rate);
-    			const afterRate = rateToNum(after.first().after_rate);
-    			
-    			setGaugeChart("#beforeThisyear", [['출석', beforeRate]]);
-    			setGaugeChart("#afterThisyear",[['출석', afterRate]]);
-    		}
-    	);
+    	ajaxData.data.startDate = (toDay.minus("date", toDay.getDay() + 3 * 7)).format("yyyyMMdd");
+    	ajaxData.data.targetId = "#before4week";
+    	if(regiDate > Number(ajaxData.data.startDate)) {
+    		ajaxData.data.startDate = regiDate+"";
+    	}
+    	setChartData(deepCopy(ajaxData));
+    	
+    	ajaxData.data.startDate = (toDay.minus("date", toDay.getDay() + 11 * 7)).format("yyyyMMdd");
+    	ajaxData.data.targetId = "#before12week";
+    	if(regiDate > Number(ajaxData.data.startDate)) {
+    		ajaxData.data.startDate = regiDate+"";
+    	}
+    	setChartData(deepCopy(ajaxData));
+    	
+    	ajaxData.data.startDate = (toDay.minus("date", (toDay.getWeek() - 1) * 7 + toDay.getDay())).format("yyyyMMdd");
+    	ajaxData.data.targetId = "#beforeThisyear";
+    	if(regiDate > Number(ajaxData.data.startDate)) {
+    		ajaxData.data.startDate = regiDate+"";
+    	}
+    	setChartData(deepCopy(ajaxData));
     	
     	// 회비
-    	ajax.run({url:"member/"+memberId}, function(after){
-    		setBarChart("#duesBar", [["납부", after.dues], ["미납", 12-after.dues]]);
-    	});
+		let maxDues = Math.floor((toDay.getTime() - new Date((regiDate+"").yyyymmdd("-")).getTime()) / (1000*60*60*24*30));
+    	if(maxDues > 12) {
+    		maxDues = 12;
+    	}
+    	setBarChart("#duesBar", [["납부", member.dues], ["미납", maxDues-member.dues]]);
+    	
     });
 
 	
