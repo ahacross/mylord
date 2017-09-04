@@ -168,8 +168,8 @@ Promise.all([getToday(), getMemberInfo()])
     	if(maxDues > 12) {
     		maxDues = 12;
     	}
-    	setBarChart("#duesBar", [["납부", member.dues], ["미납", maxDues-member.dues]]);
-    	
+    	setBarChart("#duesBar", [["납부", member.dues], ["미납", (maxDues-member.dues < 0)?0:maxDues-member.dues]]);
+    	$("#userName").html(member.name + " 님 ^^");
     });
 
 	

@@ -6,6 +6,8 @@ import java.util.Map;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service("memberService")
 public class MemberServiceImpl implements MemberService{
@@ -25,6 +27,7 @@ public class MemberServiceImpl implements MemberService{
 	}
 
 	@Override
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public int insert(Member member) {
 		MemberMapper mapper = session.getMapper(MemberMapper.class);
 		return mapper.insert(member);

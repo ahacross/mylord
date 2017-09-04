@@ -11,16 +11,19 @@
 	<Loggers> 
 		<Logger name="me.ahacross.mylord" level="DEBUG" additivity="true"/> 
 		
-		<!-- log SQL with timing information, post execution --> 
+		<!-- log SQL with timing information, post execution -->
+		<!-- 
 		<Logger name="org.mybatis" level="DEBUG">
 			<AppenderRef ref="console" />
 		</Logger>
-		<!-- <Logger name="java.sql" level="DEBUG">
+		 <Logger name="java.sql" level="DEBUG">
 			<AppenderRef ref="console" />
 		</Logger>
+		-->
 		<logger name="jdbc.sqltiming" level="INFO" additivity="true"> 
 			<appender-ref ref="console" /> 
-		</logger> 
+		</logger>
+		<!-- 
 		<logger name="org.springframework" level="INFO" additivity="true"> 
 			<appender-ref ref="console" /> 
 		</logger> 

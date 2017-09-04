@@ -25,6 +25,14 @@
 			</div>    
         </div>
     </div>
+    <br/>
+	<br/>    
+    <div style="display: flex;flex-direction: row;">
+        <div style="width: 10rem;">고전성가곡집2</div>
+        <div style="flex: auto;" id="account">        
+    		<a href="/choir2/" target="_blank">고전 성가곡집 mp3 파일들</a>    
+        </div>
+    </div>
 </div>
 <script>
 ajax.run({url:"officer", data:{role:"임원(회계)"}}, function(after){

@@ -84,7 +84,6 @@
 				function(){
 					delete window.jsLodingComplate;
 					
-					
 					window.naviSectionArea  = $(".navigation-section");
 					var md = new Material({
 							options: {
@@ -183,7 +182,10 @@
 	</script>
 </head>
 <body>
-	<div class="sidemenu sidebar responsive" id="navigation-sidemenu" hidden>	
+	<div class="sidemenu sidebar responsive" id="navigation-sidemenu" hidden>
+		<div class="sidemenu-hero">			
+			<div class="serif" id="userName" style="text-align: center;"></div>
+		</div>
 		<ul class="menu">
 			<li ripple><a class="pointer" id="status"><i class="icon-chart"></i>출석 현황</a></li>		
 			<li ripple><a class="pointer" id="infoMod"><i class="fa fa-user-circle" aria-hidden="true"></i>정보 수정</a></li>
