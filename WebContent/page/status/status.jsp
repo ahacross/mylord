@@ -113,7 +113,6 @@ var rateToNum = function(rate){
  
 var setChartData = function(datas){
 	ajax.run(datas, function(after, before){
-		console.log(before.startDate, before.endDate);
 		const beforeRate = rateToNum(after.first().before_rate);
 		const afterRate = rateToNum(after.first().after_rate);
 		

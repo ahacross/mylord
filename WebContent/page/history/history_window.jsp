@@ -54,12 +54,14 @@
 	
 	targetWindow.init = function(params) {
 		Content.find("#historyTable").find(":text, [type=date], textarea").val("");
+		let title = "부른 곡 ";
 		if(params.type === "update"){
 			initMod(Content.find("#historyTable"), params.row)
-			windowDialog.setTitle(targetWindow, "부른 곡 수정");
+			title += "수정";
 		}else{
-			windowDialog.setTitle(targetWindow, "부른 곡 추가");
+			title += "추가";
 		}
+		windowDialog.setTitle(targetWindow, title);
 		targetWindow.userVars.params = params;
 	}
 	

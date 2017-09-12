@@ -18,6 +18,9 @@
 		from 
 			member m
 		<trim prefix="where" prefixOverrides="AND" >
+			<if test='name != null'>
+	    		name = #{name}
+	    	</if>
 	    	<if test='phone != null'>
 	    		phone = #{phone}
 	    	</if>

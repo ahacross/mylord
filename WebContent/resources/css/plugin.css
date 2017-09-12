@@ -444,3 +444,15 @@ body:not(.tui-grid-container)::-webkit-scrollbar-thumb {height: 50px; width: 50p
 .tui-datepicker-footer select {
 	font-size: initial;
 }
+
+.tui-datepicker {
+	z-index:5;
+}
+
+.tui-calendar .tui-calendar-title-today {
+	text-align: center;
+}
+
+.button.raised.window {
+	padding: .2em .75em;
+}

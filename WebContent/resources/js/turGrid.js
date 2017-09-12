@@ -2,6 +2,12 @@ var tuiGrid = (function(tuiGrid, $, undefined){
 	
 	tuiGrid.grids = {};
 	
+	var addGridMethods = function(grid) {
+		grid.saveDatas = function(datas){
+			grid.datas = deepCopy(datas);
+		}
+	}
+	
 	tuiGrid.makeGrid = function(params) {
 		const gridId = params.gridId || params.el.selector.split(" ").last().substr(1);
 		
@@ -9,11 +15,11 @@ var tuiGrid = (function(tuiGrid, $, undefined){
 		if(grid) {
 			grid.destroy();
 		}
-		
+
 		var gridOptions = {
 		    el: params.el,
-		    data: params.data,
-		    bodyHeight:window.innerHeight -115,	    
+		    data: params.data || [],
+		    bodyHeight:window.innerHeight - 130,	    
 		    columns: params.columns
 		};
 		
@@ -23,6 +29,7 @@ var tuiGrid = (function(tuiGrid, $, undefined){
 		
 		grid = new tui.Grid(gridOptions);
 		tuiGrid.grids[gridId] = grid;
+		addGridMethods(grid);
 		
 		setTimeout(function(){
 			grid.refreshLayout();	

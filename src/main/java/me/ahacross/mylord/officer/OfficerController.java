@@ -62,9 +62,7 @@ public class OfficerController {
 	
 	@ResponseBody
 	@RequestMapping(value="{id}", method = RequestMethod.DELETE)	
-	public Map<String, Object> deleteMember(@PathVariable Integer id) {
-		Officer member = new Officer();
-		member.setMember_id(id);
+	public Map<String, Object> deleteMember(@PathVariable Integer id, @RequestBody Officer member) {
 		Map<String, Object> resultMap = new HashMap<String, Object>();
 		resultMap.put("type", "delete");
 		resultMap.put("cnt", officerService.delete(member));

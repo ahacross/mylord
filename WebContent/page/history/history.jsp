@@ -7,9 +7,9 @@
 				<input type="text" name="search" class="text-input" placeholder="음원 검색"/>
 			</div>
         </div>
-		<div style="width: 8.5rem;">
+		<div style="width: 7.5rem;">
 			<button id="addHistory" class="fab bg-blue-500 color-white small hide" style="width: 1.1em;height: 1.1em;line-height: 20px;padding: .1em .05em;"><i class="icon-add"></i></button>
-			<span id="switchTxt">심플 필드</span>
+			<span id="switchTxt">간단</span>
             <div class="switch">
 				<input type="checkbox" id="switch"/>
 				<label for="switch"></label>
@@ -80,10 +80,10 @@
 		const txtDom = $("#switchTxt");
 		let columns;
 		if($("#switch").prop("checked")){
-			txtDom.text("상세필드");
+			txtDom.text("상세");
 			columns = getSimpleColumns().concat(getAddColumns());
 		}else{
-			txtDom.text("간단필드");
+			txtDom.text("간단");
 			columns = getSimpleColumns();
 		}
 		
@@ -95,30 +95,24 @@
 		return columns;
 	}
 	
-	
-	var historyGrid;
-	var setGrid = function(){
-		historyGrid = tuiGrid.makeGrid({el:$('#gridHistory'), data: [], columns: getColumns()});
-		
-		historyGrid.on('click', function(e) {
-			if(cookie.get("mylordAuth").indexOf("임원") > -1){
-				if(e.columnName === "title") {
-					historyWindowOpen("update", e.instance.getRow(e.rowKey));
-				}
+	var historyGrid = tuiGrid.makeGrid({el:$('#gridHistory'), columns: getColumns()});
+	historyGrid.on('click', function(e) {
+		if(cookie.get("mylordAuth").indexOf("임원") > -1){
+			if(e.columnName === "title") {
+				historyWindowOpen("update", e.instance.getRow(e.rowKey));
 			}
-	    });
-	}
-	setGrid();
-	
-	var setGridData = function(){
+		}
+    });
+
+	let setGridHistory = function(){
 		ajax.run({url:"history"}, function(after){
 			historyGrid.resetData(after);
-			historyGrid.datas = deepCopy(after);
+			historyGrid.saveDatas(after);
 		});
 	}
-	setGridData();
-	userFns.setGridHistory = setGridData;
-	
+	setGridHistory();
+	userFns.setGridHistory = setGridHistory;
+	 
 	$("#switch").on("change", function(){
 		historyGrid.setColumns(getColumns());
 	});
