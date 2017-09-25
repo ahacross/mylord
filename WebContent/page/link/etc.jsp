@@ -4,7 +4,7 @@
 	<div style="display: flex;flex-direction: row;">
         <div style="width: 10rem;">정관</div>
         <div style="flex: auto;">
-        	<a href="/mylordFiles/마이로드 정관.pdf">마이로드 정관 PDF (176KB)</a>
+        	<a href="/files/mylord/마이로드 정관.pdf" target="_blank">마이로드 정관 PDF (176KB)</a>
         </div>
     </div>
 	<br/>

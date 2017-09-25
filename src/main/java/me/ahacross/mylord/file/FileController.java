@@ -70,8 +70,8 @@ public class FileController {
         return resultMap;
     }
  
-    @RequestMapping(value = "/download", method=RequestMethod.GET)
     @ResponseBody
+    @RequestMapping(value = "/download", method=RequestMethod.GET)
     public void download(@ModelAttribute BbsFile bbsFile, HttpServletRequest request, HttpServletResponse response) throws IOException {
     	String uploadLocation = new FilePath().getUploadLocation();
         File file = new File(uploadLocation+bbsFile.getMask_name());
@@ -150,5 +150,26 @@ public class FileController {
         	file.delete();
         }
         
+    }
+    
+    @ResponseBody
+    @RequestMapping(value = "/jsonFilelist", method=RequestMethod.GET)
+    public List<String> filelist() throws IOException {
+    	List<String> resultList = new ArrayList<String>();
+    	
+    	//특정 directory를 File 객체로 생성
+    	File directory = new File(new FilePath().getJSONFile());
+
+    	//특정 directory 내 파일 목록 가져오기
+    	File[] files = directory.listFiles();
+
+    	for (File file : files) {
+    		//파일이 directory 가 아닌 file 일때
+	    	if (file.isFile()) {
+	    		resultList.add(file.getName());
+	    	}
+    	}
+    	
+    	return resultList;
     }
 }

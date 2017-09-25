@@ -8,13 +8,17 @@ public class FilePath {
 	private final String UPLOAD_LOCATION_SERVER_FILE ="/home/nginxRoot/files/";
     private final String UPLOAD_LOCATION_DEV = "D:/workspaces/boot/.metadata/.plugins/org.eclipse.wst.server.core/tmp0/wtpwebapps/Mylord/files/";
     private final String UPLOAD_LOCATION_COM = "C:/Users/test/Desktop/workspace/.metadata/.plugins/org.eclipse.wst.server.core/tmp0/wtpwebapps/Mylord/files/";
+    private final String JSON_SERVER_FILE ="/home/nginxRoot/files/json/";
     
     public String getUploadLocation () {    	
    		return UPLOAD_LOCATION_SERVER;
     }
     public String getUploadLocationFile () {
     	return UPLOAD_LOCATION_SERVER_FILE;
-    	
+    }
+    
+    public String getJSONFile () {
+    	return JSON_SERVER_FILE;
     }
 }
 

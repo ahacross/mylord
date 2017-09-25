@@ -23,16 +23,30 @@ var tuiGrid = (function(tuiGrid, $, undefined){
 		    columns: params.columns
 		};
 		
-		if(params.rowHeaders) {
+		if(params.rowHeaders === true) {
 			gridOptions.rowHeaders = ['rowNum']; 
+		}else if (typeof params.rowHeaders === "object") {
+			gridOptions.rowHeaders = params.rowHeaders;
 		}
 		
+		if(params.footer) {
+			gridOptions.footer = params.footer; 
+		}
+		
+		if(params.selectType) {
+			gridOptions.selectType = params.selectType; 
+		}
+		
+		if(!params.bodyHeight) {
+			delete gridOptions.bodyHeight; 
+		}
+		console.log(gridOptions);
 		grid = new tui.Grid(gridOptions);
 		tuiGrid.grids[gridId] = grid;
 		addGridMethods(grid);
 		
 		setTimeout(function(){
-			grid.refreshLayout();	
+			grid.refreshLayout();
 		}, 500);
 		
 		return grid;

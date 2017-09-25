@@ -5,7 +5,8 @@ var ajax = (function(ajax, $, undefined){
 		before : {}, 
 		methodMap : {"DELETE":"delete", "INSERT":"post", "UPDATE":"put"},
 		setUrl : function(url){
-			this.datas.url = location.pathname + url; // url은 member/41 이렇게 와야 함. 
+			//this.datas.url = location.pathname + url; // url은 member/41 이렇게 와야 함.
+			this.datas.url = "/mylord/" + url;
 		},
 		setMethod : function(method){
 			this.datas.method = this.methodMap[(method||"").toUpperCase()] || "get";			
