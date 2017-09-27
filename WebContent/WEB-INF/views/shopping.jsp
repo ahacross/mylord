@@ -52,7 +52,8 @@
 	<div style="display: flex;flex-direction: row;">
         <div style="flex: auto;">
         	<div>
-        		<select name="name" class="dropdown-menu"></select><br/>        		
+        		<select name="name" class="dropdown-menu"></select>
+        		<button id="editJson" class="button raised bg-blue-500 color-white" style="padding: 5px 12px;">수정</button>
         	</div>
         	
     		<div style="display: flex;flex-direction: row;margin-top:10px;">
@@ -64,7 +65,9 @@
         </div>		
     </div>	
 	<div id="resultArea"></div>
+	<div class="windowContent"></div>
 <script>
+	window.userWindows = {};
 	var setNameOptions = function(){
 		ajax.run({url:"jsonFilelist"}, function(datas){
 			var options= '<option value="">선택</option>';
@@ -109,7 +112,7 @@
 				align:"center",
 				width:150,
 				formatter:function(value) {
-					return value + ' 원'
+					return comma.on(value) + ' 원'
 				}
 			},{
 				title:"구매가",
@@ -132,16 +135,16 @@
 	        columnContent: {	            
 	        	est: {
 	                template: function(valueMap) {
-	                    return 'TOTAL: ' + valueMap.sum ;
+	                    return 'TOTAL: ' + comma.on(valueMap.sum) ;
 	                }
 	            },
 	            price: {
 	                template: function(valueMap) {
-	                    return 'TOTAL: ' + valueMap.sum ;
+	                    return 'TOTAL: ' + comma.on(valueMap.sum);
 	                }
 	            }
 	        }
-		}
+		};
 	}
 	
 	$(document).ready(function(){
@@ -149,7 +152,7 @@
 			function(){return window.jsLodingComplate || false;},
 			function(){
 				delete window.jsLodingComplate;
-			
+				userWindows.jsonWindow = loadWindow("page/windows/json_window.jsp");
 				setNameOptions();
 		
 				$("select[name=name]").on("change", function(){
@@ -160,7 +163,7 @@
 							
 							var marketTypeHtml = '';
 							jsonData.forEach(function(markets, idx){
-								marketTypeHtml += '<li ripple data-idx="'+idx+'"><a class="pointer">'+markets.marketType + ' ('+(markets.checkList.filter((check)=> {return check.check} ).length)+' / '+markets.checkList.length+')'+'</a></li>';
+								marketTypeHtml += '<li ripple data-idx="'+idx+'"><a class="pointer">'+makeTabText (markets) +'</a></li>';
 							});
 							
 							$("#marketTypesTab").html(marketTypeHtml).find("[ripple]").first().click();
@@ -176,17 +179,36 @@
 					$("#checklistTable").show();
 				});
 				
+				$("#editJson").on("click", function(){
+					userWindows.jsonWindow.init();
+					windowDialog.show(userWindows.jsonWindow, 400, 430);
+				});
+				
 				window.checklistGrid = tuiGrid.makeGrid({el:$('#checklistTable'), rowHeaders:true, columns: getColumns(), footer:getFooter(), bodyHeight:false});
 			}
 		);
 	});
 	
+	function makeTabText (markets) {
+		return markets.marketType + ' ('+(markets.checkList.filter((check)=> {return check.check} ).length)+' / '+markets.checkList.length+')';
+	}
+
 	function saveJson(rowKey, field, value){
 		jsonData[$(".selected").data("idx")].checkList[rowKey][field] = value;
-		
+		$(".selected a").html(makeTabText (jsonData[$(".selected").data("idx")]));
+
 		ajax.run({url:"json", method:"update", data:{name:$("[name=name]").val(), json:JSON.stringify(jsonData)}}, function(result){
 			console.log(result);
 		});
+	}
+
+	var comma = {
+		on : function(str){
+			return String(str).replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+		},
+		off:function(str){
+				return String(str).replace(/[^\d]+/g, '');
+		}
 	}
 </script>
 </body>

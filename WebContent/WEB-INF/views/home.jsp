@@ -74,7 +74,7 @@
 				url.push(id);
 			}
 			
-			url.push(id+".jsp");
+			url.push(id+".jsp");			
 			naviSectionArea.load(url.join("/"));
 		}
 		

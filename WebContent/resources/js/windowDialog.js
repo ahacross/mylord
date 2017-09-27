@@ -151,7 +151,7 @@ var loadWindow = function(url, options){
 	var areaId = "windowAreaDialog"+windowDialog.getNewWindowDialogNum();
 	$(".windowContent").append('<div class="windowArea" id='+areaId+' style="display:none;"></div>');	
 	
-	$.when(loadUrlPromise($(".windowContent #"+areaId),location.pathname+url)).then(function(html){
+	$.when(loadUrlPromise($(".windowContent #"+areaId),location.pathname.split("/").splice(0, 2).join("/")+"/"+url)).then(function(html){
 		var targetWindow = $("#"+areaId),
 			targetWindowDialog = targetWindow.parents(".alertify");
 		
