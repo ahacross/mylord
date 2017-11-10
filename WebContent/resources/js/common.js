@@ -191,6 +191,18 @@ Date.prototype.getWeek = function() {
     return Math.ceil(dayOfYear/7)
 }
 
+Date.prototype.getWeekState = function(){
+	var toDay = new Date(),
+		resultWeekCnt;
+	
+	resultWeekCnt = toDay.getWeek() - this.getWeek();
+	if(toDay.getFullYear() > this.getFullYear()){
+		resultWeekCnt = 52 + resultWeekCnt;	
+	}
+	
+	return resultWeekCnt;
+}
+
 Date.prototype.minus = function(type, minus) {
     var dat = new Date(this.valueOf());
     
@@ -687,3 +699,12 @@ var query = {
 		return html;
 	}
 };
+
+var comma = {
+	on : function(str){
+		return String(str).replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+	},
+	off:function(str){
+			return String(str).replace(/[^\d]+/g, '');
+	}
+}

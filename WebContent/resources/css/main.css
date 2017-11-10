@@ -145,3 +145,86 @@ body {
 .pointer {
 	cursor:pointer;
 }
+
+.tabHead {
+	background-color: #f5f5f5;
+    background-image: -moz-linear-gradient(top,#f5f5f5 0,#f1f1f1 100%);
+    background-image: linear-gradient(top,#f5f5f5 0,#f1f1f1 100%);
+    background-image: -webkit-linear-gradient(top,#f5f5f5 0,#f1f1f1 100%);
+    background-image: -o-linear-gradient(top,#f5f5f5 0,#f1f1f1 100%);
+    background-image: -ms-linear-gradient(top,#f5f5f5 0,#f1f1f1 100%);
+    border: 1px solid #dcdcdc;
+    height: 31px;
+    line-height: 30px;
+    padding: 2px 15px;
+    overflow:hidden;
+}
+
+.tab {
+	display: flex;
+    list-style: none;
+    font-size: 12px;
+    margin-left: -55px;
+    margin-top: 4px;
+}
+
+.tab li {
+	margin-top: 0;
+    margin-bottom: -1px;
+    margin-left: 2px;
+}
+
+.tab li a{
+    text-decoration: none;
+	color: #740cd2;
+    border: 1px solid #e6e6e6;
+    background-color: #fff;
+    background-image: -moz-linear-gradient(top,#fff 0,#f4f4f4 100%);
+    background-image: linear-gradient(top,#fff 0,#f4f4f4 100%);
+    background-image: -webkit-linear-gradient(top,#fff 0,#f4f4f4 100%);
+    background-image: -o-linear-gradient(top,#fff 0,#f4f4f4 100%);
+    background-image: -ms-linear-gradient(top,#fff 0,#f4f4f4 100%);
+    border-radius: 4px 4px 0 0;
+	padding: 10px 15px 7px 15px;
+	margin-right: 2px;    
+}
+
+.tab li.active>a {
+	color: #000;
+    background-color: #fff;
+    background-image: -moz-linear-gradient(top,#fff 0,#fff 100%);
+    background-image: linear-gradient(top,#fff 0,#fff 100%);
+    background-image: -webkit-linear-gradient(top,#fff 0,#fff 100%);
+    background-image: -o-linear-gradient(top,#fff 0,#fff 100%);
+    background-image: -ms-linear-gradient(top,#fff 0,#fff 100%);
+    border-color: #ddd #ddd transparent;
+    font-weight: 800;
+}
+
+.grid-state-circle{ width: 20px; height: 20px; border-radius: 10px;}
+.grid-state-circle.green{ background: #339966;}
+.grid-state-circle.orange{ background: #F27812;}
+.grid-state-circle.red{ background: #DC0A0A;}
+
+.attendState {color: #f5fff6;}
+.attendState.green{ background: #339966;}
+.attendState.orange{ background: #F27812;}
+.attendState.red{ background: #DC0A0A;}
+
+.tui-grid-table input[type=checkbox] {
+  transform: scale(1.5);
+}
+
+.monthHead {
+	background-color: #f5f5f5;
+    background-image: -moz-linear-gradient(top,#f5f5f5 0,#f1f1f1 100%);
+    background-image: linear-gradient(top,#f5f5f5 0,#f1f1f1 100%);
+    background-image: -webkit-linear-gradient(top,#f5f5f5 0,#f1f1f1 100%);
+    background-image: -o-linear-gradient(top,#f5f5f5 0,#f1f1f1 100%);
+    background-image: -ms-linear-gradient(top,#f5f5f5 0,#f1f1f1 100%);
+    padding: 2px 15px;    
+}
+
+.cursor {
+	cursor: pointer;
+}

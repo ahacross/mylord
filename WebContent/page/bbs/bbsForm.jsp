@@ -54,6 +54,9 @@ var initEditor = function(){
 		menubar: true,
 		language: "ko_KR",
 		automatic_uploads: true,
+		images_upload_url: location.pathname+"upload",
+		images_reuse_filename: true,
+
 	// URL of our upload handler (for more details check: https://www.tinymce.com/docs/configure/file-image-upload/#images_upload_url)
 	// here we add custom filepicker only to Image dialog
 		file_picker_types: 'image', 
@@ -82,11 +85,12 @@ var initEditor = function(){
 		      
 		      // call the callback and populate the Title field with the file name
 		      cb(blobInfo.blobUri(), { title: file.name });
+		      
 		    };
 		    
 		    input.click();
 		},
-		images_upload_handler: function (blobInfo, success, failure) {
+		/* images_upload_handler: function (blobInfo, success, failure) {
 		    var xhr, formData;
 
 		    xhr = new XMLHttpRequest();
@@ -107,7 +111,7 @@ var initEditor = function(){
 		        failure('Invalid JSON: ' + xhr.responseText);
 		        return;
 		      }
-console.log(json);
+				console.log(json);
 		      success(json.location);
 		    };
 
@@ -115,7 +119,7 @@ console.log(json);
 		    formData.append('file', blobInfo.blob(), blobInfo.filename());
 
 		    xhr.send(formData);
-		  },
+		  }, */
 
 		plugins: "autolink autosave code link media image table textcolor autoresize",
 		toolbar: 'undo redo | insert | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image'

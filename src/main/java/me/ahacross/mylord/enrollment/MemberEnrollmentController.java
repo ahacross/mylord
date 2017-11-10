@@ -3,6 +3,7 @@ package me.ahacross.mylord.enrollment;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -20,9 +21,18 @@ public class MemberEnrollmentController {
 	@Autowired
 	MemberEnrollmentService memberEnrollmentService;
 	
+	
+	
+	@ResponseBody
+	@RequestMapping(method = RequestMethod.GET)	
+	public Object getMembers(@ModelAttribute MemberEnrollment memberEnrollment) throws Exception{
+		return memberEnrollmentService.getOne(memberEnrollment);
+	}
+	
+	
 	@ResponseBody
 	@RequestMapping(method = RequestMethod.POST)	
-	public Object post(@RequestBody MemberEnrollment memberEnrollment) {
+	public Object post(@RequestBody MemberEnrollment memberEnrollment) throws Exception{
 		return memberEnrollmentService.insert(memberEnrollment);
 	}
 }

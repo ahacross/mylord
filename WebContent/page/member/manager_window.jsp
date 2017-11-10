@@ -46,8 +46,6 @@ setTimeout(function(){
 		Content = windowDialog.getContent(targetWindow),
 		Footer = windowDialog.getFooter(targetWindow);
 	
-
-	
 	var close = function(){
 		targetWindow.userVars = {};
 		targetWindow.close();

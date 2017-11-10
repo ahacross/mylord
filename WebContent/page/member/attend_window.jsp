@@ -1,21 +1,21 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<div id="attendWindow" class="window jui">
+<div id="attendWindow" class="window">
 	<div class="head hide">
 		<div class="left">출석체크</div>
 	</div>
-	<div class="body">		
-		<textarea rows="20" style="width:98%;" id="attendText"></textarea>
+	<div class="body" style="width:98%;">		
+		<textarea class="text-input width100" rows="20" id="attendText"></textarea>
 	</div>
-	<div class="foot hide">
-		<a id="attend" class="focus btn">출석체크</a>
-		<a id="areaInit" class="btn">초기화</a>		
-        <a id="close" class="btn">닫기</a>
+	<div class="foot hide">	
+        <button id="attend" class="button raised bg-blue-500 color-white">출석체크</button>&nbsp; 
+        <button id="areaInit" class="button raised">초기화</button> &nbsp;
+        <button id="close" class="button raised">닫기</button>
 	</div>
 </div>
 
 <script>
 (function(){ 
-	var targetWindow = userVars.attendWindow,
+	var targetWindow = userWindows.attendWindow,
 		Content = windowDialog.getContent(targetWindow),
 		Footer = windowDialog.getFooter(targetWindow);
 	
@@ -44,16 +44,27 @@
 		});
 	 	
 	 	// 파트탭 이동
-	 	var parts = ["베이스", "소프라노", "알토", "테너"];
+	 	var parts = ["베이스", "소프라노", "알토", "테너"];	 	
 	 	tempNames.forEach(function(name){
 	 		if(_.indexOf(parts, name) > -1){
+	 			if(name === "베이스") {
+	 				name="벵";
+	 			}else if(name === "소프라노") {
+	 				name="솦";
+	 			}
 	 			$("#partTab").find(":contains("+name+")").parent().click();
 	 			return false;
 	 		}
 	 	});
-		
+	 	
 	 	// 이름별 셋팅
 	 	setTimeout(function(){
+	 		const grid = tuiGrid.getGrid("gridPartList");
+	 		let gridNameDatas = {};
+	 		grid.getRows().forEach(function(data){
+		 		gridNameDatas[data.name] = data;
+		 	});
+	 		
 	 		tempNames.forEach(function(name){
 	 			if(name.trim() !== ""){
 					if(isNoNames(name) || /[\d]{2}\/[\d]{2}/.test(name)){
@@ -65,9 +76,9 @@
 						return;
 					} 
 					
-					var datas = userVars.tableInfos.findData("name", name);
-					if(!isNaN(datas.index)){
-						userVars.tableInfos.table.find("tbody tr").eq(datas.index).find(":checkbox").eq(isBefore?0:1).click();	
+					const datas = gridNameDatas[name];
+					if(datas && datas.rowKey > -1){
+						grid.$el.find(".tui-grid-rside-area tr[data-row-key]").eq(datas.rowKey).find(":checkbox").eq(isBefore?0:1).click();
 					}else{
 						if(isBefore){
 							omissions.before.push(name);	
@@ -82,8 +93,7 @@
 	 			}
 			});
 	 		Footer.find("#close").click();
-	 	}, 500);
-	 	
+	 	}, 1000);
 	}
 	
 	var close = function(){
@@ -91,15 +101,14 @@
 		targetWindow.close();
 	}
 	
-	
 	var areaInit = function(){
-		$("#attendText").val("");
+		Content.find("#attendText").val("");
 	}
 	
 	setTimeout(function(){
 		Footer.find("#close").on("click", close);
 		Footer.find("#areaInit").on("click", areaInit);
-		Footer.find("#attend").on("click", attend);
-	}, 1000);
+		Footer.find("#attend").on("click", attend);	
+	}, 500);
 }());
 </script>

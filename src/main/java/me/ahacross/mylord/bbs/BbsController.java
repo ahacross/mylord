@@ -58,19 +58,15 @@ public class BbsController {
 	
 	@ResponseBody
 	@RequestMapping(method = RequestMethod.GET)	
-	public Map<String, Object> getList(@ModelAttribute Bbs bbs) {
-		Map<String, Object> resultMap = new HashMap<String, Object>();
-		resultMap.put("list", bbsService.getList(bbs));
-		return resultMap;
+	public Object getList(@ModelAttribute Bbs bbs) {
+		return bbsService.getList(bbs);
 	}
 	
 	
 	@ResponseBody
 	@RequestMapping(value="{id}", method = RequestMethod.GET)	
-	public Map<String, Object> getOne(@ModelAttribute Bbs bbs) {
-		Map<String, Object> resultMap = new HashMap<String, Object>();
-		resultMap.put("one", bbsService.getOne(bbs));
-		return resultMap;
+	public Object getOne(@ModelAttribute Bbs bbs) {
+		return bbsService.getOne(bbs);
 	}
 	
 	@ResponseBody

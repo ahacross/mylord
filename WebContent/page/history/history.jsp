@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<div class="panel">	
+<div class="panel">
 	<div style="display: flex;flex-direction: row;">
         <div style="flex: auto;">
 			<div class="text-input-container card">
@@ -70,7 +70,7 @@
 				name:"practice",
 				width:30,
 				formatter:function(value) {
-					return (value)?'<a href="https://ahacross.me/practice.html?url='+value+'" target="_blank">연습</a>':''; 
+					return (value)?'<a href="https://ahacross.me/practice.html?url='+value+'&part='+cookie.get("part")+'" target="_blank">연습</a>':''; 
 				}
 			}
 		];
@@ -96,13 +96,13 @@
 	}
 	
 	var historyGrid = tuiGrid.makeGrid({el:$('#gridHistory'), columns: getColumns()});
-	historyGrid.on('click', function(e) {
-		if(cookie.get("mylordAuth").indexOf("임원") > -1){
+	if(cookie.get("mylordAuth").indexOf("임원") > -1){
+		historyGrid.on('click', function(e) {
 			if(e.columnName === "title") {
 				historyWindowOpen("update", e.instance.getRow(e.rowKey));
 			}
-		}
-    });
+    	});
+	}
 
 	let setGridHistory = function(){
 		ajax.run({url:"history"}, function(after){
@@ -141,7 +141,4 @@
 	});
 	
 }());
-
-
-
 </script>

@@ -56,7 +56,7 @@ public class MemberController {
 	
 	@ResponseBody
 	@RequestMapping(method = RequestMethod.GET)	
-	public Object getMembers(@ModelAttribute Member member) {
+	public Object getMembers(@ModelAttribute Member member) throws Exception{
 		List<Map<String, Object>> members = memberService.getList(member);
 		Object returnValue = null;
 		
@@ -75,7 +75,7 @@ public class MemberController {
 	
 	@ResponseBody
 	@RequestMapping(value="{id}", method = RequestMethod.GET)	
-	public Object getMember(@PathVariable Integer id) {
+	public Object getMember(@PathVariable Integer id) throws Exception{
 		Member member = new Member();
 		member.setMember_id(id);
 		return memberService.getOne(member);
@@ -83,7 +83,7 @@ public class MemberController {
 	
 	@ResponseBody
 	@RequestMapping(method = RequestMethod.POST)	
-	public Map<String, Object> postMember(@RequestBody Member member) {
+	public Map<String, Object> postMember(@RequestBody Member member) throws Exception{
 		Map<String, Object> resultMap = new HashMap<String, Object>();
 		resultMap.put("type", "insert");
 		resultMap.put("cnt", memberService.insert(member));
@@ -93,7 +93,7 @@ public class MemberController {
 	
 	@ResponseBody
 	@RequestMapping(value="{id}", method = RequestMethod.PUT)	
-	public Map<String, Object> putMember(@PathVariable Integer id, @RequestBody Member member) {
+	public Map<String, Object> putMember(@PathVariable Integer id, @RequestBody Member member) throws Exception {
 		Map<String, Object> resultMap = new HashMap<String, Object>();
 		resultMap.put("type", "update");
 		resultMap.put("cnt", memberService.update(member));
@@ -102,7 +102,7 @@ public class MemberController {
 	
 	@ResponseBody
 	@RequestMapping(value="{id}", method = RequestMethod.DELETE)	
-	public Map<String, Object> deleteMember(@PathVariable Integer id) {
+	public Map<String, Object> deleteMember(@PathVariable Integer id) throws Exception{
 		Member member = new Member();
 		member.setMember_id(id);
 		Map<String, Object> resultMap = new HashMap<String, Object>();

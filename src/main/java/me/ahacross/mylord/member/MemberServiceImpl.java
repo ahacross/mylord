@@ -15,32 +15,31 @@ public class MemberServiceImpl implements MemberService{
 	SqlSessionTemplate session; 
 	 
 	 @Override
-	 public List<Map<String, Object>> getList(Member member){
+	 public List<Map<String, Object>> getList(Member member) throws Exception{
 		 MemberMapper mapper = session.getMapper(MemberMapper.class);
 		return mapper.getList(member);
 	}
 
 	@Override
-	public Map<String, Object> getOne(Member member) {
+	public Map<String, Object> getOne(Member member) throws Exception{
 		MemberMapper mapper = session.getMapper(MemberMapper.class);
 		return mapper.getOne(member);
 	}
 
 	@Override
-	@Transactional(propagation = Propagation.REQUIRES_NEW)
-	public int insert(Member member) {
+	public int insert(Member member) throws Exception{
 		MemberMapper mapper = session.getMapper(MemberMapper.class);
 		return mapper.insert(member);
 	}
 
 	@Override
-	public int update(Member member) {
+	public int update(Member member) throws Exception{
 		MemberMapper mapper = session.getMapper(MemberMapper.class);
 		return mapper.update(member);
 	}
 
 	@Override
-	public int delete(Member member) {
+	public int delete(Member member) throws Exception{
 		MemberMapper mapper = session.getMapper(MemberMapper.class);
 		return mapper.delete(member);
 	}

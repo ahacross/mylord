@@ -129,7 +129,7 @@
 			}
 		];
 	}
-	const getFooter = function(){
+	const getSummary = function(){
 		return {
 			height: 30,
 	        columnContent: {	            
@@ -184,7 +184,7 @@
 					windowDialog.show(userWindows.jsonWindow, 400, 430);
 				});
 				
-				window.checklistGrid = tuiGrid.makeGrid({el:$('#checklistTable'), rowHeaders:true, columns: getColumns(), footer:getFooter(), bodyHeight:false});
+				window.checklistGrid = tuiGrid.makeGrid({el:$('#checklistTable'), rowHeaders:true, columns: getColumns(), summary:getSummary(), bodyHeight:false});
 			}
 		);
 	});
@@ -200,15 +200,6 @@
 		ajax.run({url:"json", method:"update", data:{name:$("[name=name]").val(), json:JSON.stringify(jsonData)}}, function(result){
 			console.log(result);
 		});
-	}
-
-	var comma = {
-		on : function(str){
-			return String(str).replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
-		},
-		off:function(str){
-				return String(str).replace(/[^\d]+/g, '');
-		}
 	}
 </script>
 </body>

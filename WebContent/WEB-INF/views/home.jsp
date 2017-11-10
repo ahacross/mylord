@@ -56,6 +56,11 @@
 		partMap["b"] = "베이스";
 		userVars.partMap = partMap;
 		
+		userVars.statusMap = {};
+		userVars.statusMap["Y"] = "활동중";
+		userVars.statusMap["R"] = "장기결석";
+		userVars.statusMap["N"] = "기타(탈퇴)";
+		
 		var selectMenu = function(that){
 			var classNames = "selected color-blue-500";
 			
@@ -106,12 +111,18 @@
 						naviSectionArea.html(naviSectionArea.html() + "<br><br> 권한 정보를 설정합니다.");
 						
 						Promise.resolve()
+							.then(setUserInfos)
 					    	.then(setAuth)
 					    	.then(auth => {
 					    		let authHtml = '';					    		
 					    		if(auth.indexOf("임원") > -1) {
 					    			authHtml += '<li class="divider"></li>';
-					    			authHtml += '<li ripple><a class="pointer" id="officer"><i class="fa fa-users" aria-hidden="true"></i>임원 명단</a></li>';
+					    			authHtml += '<li ripple><a class="pointer" id="officer"><i class="fa fa-id-card" aria-hidden="true"></i>임원 명단</a></li>';
+					    			//authHtml += '<li ripple><a class="pointer" id="bbs"><i class="fa fa-table" aria-hidden="true"></i>게시판</a></li>';
+					    			authHtml += '<li ripple><a class="pointer" id="member"><i class="fa fa-users" aria-hidden="true"></i>대원 관리</a></li>';
+					    		}else if(auth.indexOf("파트장") > -1) {
+					    			authHtml += '<li class="divider"></li>';
+					    			authHtml += '<li ripple><a class="pointer" id="member"><i class="fa fa-users" aria-hidden="true"></i>대원 관리</a></li>';
 					    		}
 					    		
 					    		if(auth !== ''){
@@ -164,6 +175,15 @@
 				location.reload();
 			});
 		}
+		
+		var setUserInfos = function() {
+			return new Promise(function(resolve, reject) {
+				ajax.run({url:"member/"+cookie.get("mylordId")}, function(datas){
+					cookie.set("part", datas.part);
+					resolve();
+				});
+			});
+		} 
 		
 		var setAuth = function() {
 			return new Promise(function(resolve, reject) {

@@ -1,6 +1,6 @@
 /*!
- * bundle created at "Thu Jul 27 2017 17:25:25 GMT+0900 (KST)"
- * version: 2.3.0
+ * bundle created at "Thu Oct 26 2017 11:04:11 GMT+0900 (KST)"
+ * version: 2.5.0
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -87,6 +87,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview The tui.Grid class for the external API.
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -112,9 +113,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/**
 	 * Grid public API
-	 * @class
-	 * @param {PropertiesHash} options
-	 *      @param {Array} [data] - Grid data for making rows.
+	 * @class Grid
+	 * @param {object} options
+	 *      @param {Array} [options.data] - Grid data for making rows.
 	 *      @param {Object} [options.header] - Options object for header.
 	 *      @param {number} [options.header.height=35] - The height of the header area.
 	 *      @param {array} [options.header.complexColumns] - This options creates new parent headers of the multiple columns
@@ -226,6 +227,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *                  This option is column specific, and overrides the global copyOptions.
 	 *              @param {boolean} [options.columns.copyOptions.useFormattedValue] - Whether to use
 	 *                  formatted values or original values as a string to be copied to the clipboard
+	 *              @param {boolean} [options.columns.copyOptions.useListItemText] - Whether to use
+	 *                  concatenated text or original values as a string to be copied to the clipboard
 	 *          @param {Array} [options.columns.relations] - Specifies relation between this and other column.
 	 *              @param {array} [options.columns.relations.targetNames] - Array of the names of target columns.
 	 *              @param {function} [options.columns.relations.disabled] - If returns true, target columns
@@ -245,20 +248,36 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *                  for this column
 	 *              @param {Object} [options.columns.component.options] - The options object to be used for
 	 *                  creating the component
-	 *      @param {Object} [options.footer] - The object for configuring footer area.
-	 *          @param {number} [options.footer.height] - The height of the footer area.
-	 *          @param {Object.<string, Object>} [options.footer.columnContent]
-	 *              The object for configuring each column in the footer.
+	 *      @param {Object} [options.summary] - The object for configuring summary area.
+	 *          @param {number} [options.summary.height] - The height of the summary area.
+	 *          @param {Object.<string, Object>} [options.summary.columnContent]
+	 *              The object for configuring each column in the summary.
 	 *              Sub options below are keyed by each column name.
-	 *              @param {boolean} [options.footer.columnContent.useAutoSummary=true]
+	 *              @param {boolean} [options.summary.columnContent.useAutoSummary=true]
 	 *                  If set to true, the summary value of each column is served as a paramater to the template
 	 *                  function whenever data is changed.
-	 *              @param {function} [options.footer.columnContent.template] - Template function which returns the
-	 *                  content(HTML) of the column of the footer. This function takes an K-V object as a parameter
+	 *              @param {function} [options.summary.columnContent.template] - Template function which returns the
+	 *                  content(HTML) of the column of the summary. This function takes an K-V object as a parameter
+	 *                  which contains a summary values keyed by 'sum', 'avg', 'min', 'max' and 'cnt'.
+	 *      @param {Object} [options.footer] - Deprecated: The object for configuring summary area. This option is replaced by "summary" option.
+	 *          @param {number} [options.footer.height] - Deprecated: The height of the summary area.
+	 *          @param {Object.<string, Object>} [options.footer.columnContent]
+	 *              Deprecated: The object for configuring each column in the summary.
+	 *                          Sub options below are keyed by each column name.
+	 *              @param {boolean} [options.footer.columnContent.useAutoSummary=true]
+	 *                  Deprecated: If set to true, the summary value of each column is served as a paramater to the template
+	 *                              function whenever data is changed.
+	 *              @param {function} [options.footer.columnContent.template] - Deprecated: Template function which returns the
+	 *                  content(HTML) of the column of the summary. This function takes an K-V object as a parameter
 	 *                  which contains a summary values keyed by 'sum', 'avg', 'min', 'max' and 'cnt'.
 	 */
 	var Grid = View.extend(/** @lends Grid.prototype */{
 	    initialize: function(options) {
+	        if (options.footer) {
+	            util.warning('The "footer" option is deprecated since 2.5.0 and replaced by "summary" option.');
+	            options.summary = options.footer;
+	        }
+
 	        this.id = util.getUniqueKey();
 	        this.domState = new DomState(this.$el);
 	        this.domEventBus = DomEventBus.create();
@@ -269,7 +288,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.container = this.viewFactory.createContainer();
 	        this.publicEventEmitter = this._createPublicEventEmitter();
 
-	        this.setData(options.data);
 	        this.container.render();
 	        this.refreshLayout();
 
@@ -280,6 +298,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.addOn = {};
 
 	        instanceMap[this.id] = this;
+
+	        if (options.data) {
+	            this.setData(options.data);
+	        }
 	    },
 
 	    /**
@@ -329,7 +351,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    _createViewFactory: function(options) {
 	        var viewOptions = _.pick(options, [
-	            'heightResizable', 'footer'
+	            'heightResizable', 'summary'
 	        ]);
 	        var dependencies = {
 	            modelManager: this.modelManager,
@@ -647,8 +669,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            _.each(rowKeys, function(rowKey) {
 	                this.modelManager.dataModel.removeRow(rowKey);
 	            }, this);
+
 	            return true;
 	        }
+
 	        return false;
 	    },
 
@@ -797,6 +821,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.addOn.Net = new NetAddOn(options);
 	            this.publicEventEmitter.listenToNetAddon(this.addOn.Net);
 	        }
+
 	        return this;
 	    },
 
@@ -956,12 +981,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 
 	    /**
-	     * Sets the HTML string of given column footer.
+	     * Sets the HTML string of given column summary.
+	     * @param {string} columnName - column name
+	     * @param {string} contents - HTML string
+	     */
+	    setSummaryColumnContent: function(columnName, contents) {
+	        this.modelManager.columnModel.setSummaryContent(columnName, contents);
+	    },
+
+	    /**
+	     * Sets the HTML string of given column summary.
+	     * @deprecated since version 2.5.0 and is replaced by "setSummaryColumnContent" API
 	     * @param {string} columnName - column name
 	     * @param {string} contents - HTML string
 	     */
 	    setFooterColumnContent: function(columnName, contents) {
-	        this.modelManager.columnModel.setFooterContent(columnName, contents);
+	        this.modelManager.columnModel.setSummaryContent(columnName, contents);
 	    },
 
 	    /**
@@ -1006,6 +1041,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    findRows: function(conditions) {
 	        var rowList = this.modelManager.dataModel.getRows();
+
 	        return _.where(rowList, conditions);
 	    },
 
@@ -1051,7 +1087,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @static
 	 * @param  {number} id - ID of the target grid
 	 * @returns {tui.Grid} - Grid instance
-	 * var Grid = tui.Grid; // or reqire('tui-grid')
+	 * var Grid = tui.Grid; // or require('tui-grid')
 	 *
 	 * Grid.getInstanceById(id);
 	 */
@@ -1122,7 +1158,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *     @param {Object} [extOptions.cell.dummy] - Styles for dummy cells.
 	 *       @param {String} [extOptions.cell.dummy.background] - background color of dummy cells.
 	 * @example
-	 * var Grid = tui.Grid; // or reqire('tui-grid')
+	 * var Grid = tui.Grid; // or require('tui-grid')
 	 *
 	 * Grid.applyTheme('striped', {
 	 *     grid: {
@@ -1145,7 +1181,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @static
 	 * @param {string} langCode - Language code ('en' or 'ko')
 	 * @example
-	 * var Grid = tui.Grid; // or reqire('tui-grid')
+	 * var Grid = tui.Grid; // or require('tui-grid')
 	 *
 	 * Grid.setLanguage('ko');
 	 */
@@ -2724,6 +2760,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Base class for Views
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -2734,7 +2771,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @module base/view
 	 * @ignore
 	 */
-	var View = Backbone.View.extend(/**@lends module:base/view.prototype */{
+	var View = Backbone.View.extend(/** @lends module:base/view.prototype */{
 	    initialize: function() {
 	        this._children = [];
 	    },
@@ -4738,6 +4775,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Model Manager
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -4797,7 +4835,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {module/domState} domState - DomState instance
 	 * @ignore
 	 */
-	var ModelManager = snippet.defineClass(/**@lends module:modelManager.prototype */{
+	var ModelManager = snippet.defineClass(/** @lends module:modelManager.prototype */{
 	    init: function(options, domState, domEventBus) {
 	        options = $.extend(true, {}, defaultOptions, options);
 
@@ -4812,7 +4850,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.renderModel = this._createRenderModel(options);
 	        this.coordConverterModel = this._createCoordConverterModel();
 	        this.selectionModel = this._createSelectionModel(options, domEventBus);
-	        this.summaryModel = this._createSummaryModel(options.footer);
+	        this.summaryModel = this._createSummaryModel(options.summary);
 	        this.clipboardModel = this._createClipboardModel(options, domEventBus);
 	    },
 
@@ -4852,6 +4890,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        });
 	    },
 
+	    /* eslint-disable complexity */
 	    /**
 	     * Creates an instance of dimension model and returns it.
 	     * @param  {Object} options - Options
@@ -4871,7 +4910,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var attrs = {
 	            headerHeight: options.header.height,
 	            bodyHeight: bodyHeight,
-	            footerHeight: options.footer ? options.footer.height : 0,
+	            summaryHeight: options.summary ? options.summary.height : 0,
+	            summaryPosition: options.summary ? (options.summary.position || 'bottom') : null,
 	            rowHeight: rowHeight,
 	            fitToParentHeight: (options.bodyHeight === 'fitToParent'),
 	            scrollX: !!options.scrollX,
@@ -4897,6 +4937,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        return dimensionModel;
 	    },
+	    /* eslint-enable complexity */
 
 	    /**
 	     * Creates an instance of coordRow model and returns it
@@ -4923,6 +4964,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var attrs = {
 	            resizable: columnOptions.resizable
 	        };
+
 	        return new CoordColumnModel(attrs, {
 	            columnModel: this.columnModel,
 	            dimensionModel: this.dimensionModel,
@@ -5016,18 +5058,18 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    /**
 	     * Creates an instance of summary model and returns it.
-	     * @param  {Object} footerOptions - footer options
+	     * @param  {Object} summaryOptions - summary options
 	     * @returns {module:model/summary} - A new instance
 	     * @private
 	     */
-	    _createSummaryModel: function(footerOptions) {
+	    _createSummaryModel: function(summaryOptions) {
 	        var autoColumnNames = [];
 
-	        if (!footerOptions || !footerOptions.columnContent) {
+	        if (!summaryOptions || !summaryOptions.columnContent) {
 	            return null;
 	        }
 
-	        _.each(footerOptions.columnContent, function(options, columnName) {
+	        _.each(summaryOptions.columnContent, function(options, columnName) {
 	            if (_.isFunction(options.template) && options.useAutoSummary !== false) {
 	                autoColumnNames.push(columnName);
 	            }
@@ -5085,6 +5127,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview 컬럼 모델
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -5136,7 +5179,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @extends module:base/model
 	 * @ignore
 	 */
-	var ColumnModel = Model.extend(/**@lends module:model/data/columnModel.prototype */{
+	var ColumnModel = Model.extend(/** @lends module:model/data/columnModel.prototype */{
 	    initialize: function() {
 	        Model.prototype.initialize.apply(this, arguments);
 	        this.textType = {
@@ -5189,18 +5232,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	        } else {
 	            columns = this.get('dataColumns');
 	        }
+
 	        return _.findIndex(columns, {name: columnName});
 	    },
 
 	    /**
-	     * columnName 이 열고정 영역에 있는 column 인지 반환한다.
-	     * @param {String} columnName   컬럼명
-	     * @returns {Boolean} 열고정 영역에 존재하는 컬럼인지 여부
+	     * Returns state that the column is included in left side by column name
+	     * @param {String} columnName - Column name
+	     * @returns {Boolean} Whether the column is included in left side or not
 	     */
 	    isLside: function(columnName) {
 	        var index = this.indexOfColumnName(columnName, true);
+	        var frozenCount = this.getVisibleFrozenCount(false);
 
-	        return (index > -1) && (index < this.get('frozenCount'));
+	        return (index > -1) && (index < frozenCount);
 	    },
 
 	    /**
@@ -5299,6 +5344,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 
 	    /**
+	     * Whether copying the visible text or not
+	     * @param {string} columnName - Column name
+	     * @returns {boolena} State
+	     */
+	    copyVisibleTextOfEditingColumn: function(columnName) {
+	        var columnModel = this.getColumnModel(columnName);
+
+	        if (snippet.pick(columnModel, 'editOptions', 'listItems')) {
+	            return !!snippet.pick(columnModel, 'copyOptions', 'useListItemText');
+	        }
+
+	        return false;
+	    },
+
+	    /**
 	     * 인자로 받은 컬럼 모델에서 !hidden을 만족하는 리스트를 추려서 반환한다.
 	     * @param {Array} rowHeaders 메타 컬럼 모델 리스트
 	     * @param {Array} dataColumns 데이터 컬럼 모델 리스트
@@ -5329,6 +5389,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                relationsMap[columnName] = columnModel.relations;
 	            }
 	        });
+
 	        return relationsMap;
 	    },
 
@@ -5345,6 +5406,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                ignoredColumnNames.push(columnModel.name);
 	            }
 	        });
+
 	        return ignoredColumnNames;
 	    },
 
@@ -5437,6 +5499,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    _getSelectType: function(rowHeaders) {
 	        var rowHeader = _.findWhere(rowHeaders, {name: '_button'});
+
 	        return rowHeader ? rowHeader.type : '';
 	    },
 
@@ -5511,6 +5574,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 	            }
 	        }
+
 	        return _.uniq(searchedNames);
 	    },
 
@@ -5526,13 +5590,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 
 	    /**
-	     * Set footer contents.
-	     * (Just trigger 'setFooterContent')
+	     * Set summary contents.
+	     * (Just trigger 'setSummaryContent')
 	     * @param {string} columnName - columnName
 	     * @param {string} contents - HTML string
 	     */
-	    setFooterContent: function(columnName, contents) {
-	        this.trigger('setFooterContent', columnName, contents);
+	    setSummaryContent: function(columnName, contents) {
+	        this.trigger('setSummaryContent', columnName, contents);
 	    }
 	});
 
@@ -5549,6 +5613,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Base class for Models
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var Backbone = __webpack_require__(9);
@@ -5558,7 +5623,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @module base/model
 	 * @ignore
 	 */
-	var Model = Backbone.Model.extend(/**@lends module:base/model.prototype*/{});
+	var Model = Backbone.Model.extend(/** @lends module:base/model.prototype*/{});
 
 	module.exports = Model;
 
@@ -5571,6 +5636,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	* @fileoverview Object that conatins constant values
 	* @author NHN Ent. FE Development Team
 	*/
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -5641,6 +5707,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        CNT: 'cnt',
 	        MAX: 'max',
 	        MIN: 'min'
+	    },
+	    summaryPosition: {
+	        TOP: 'top',
+	        BOTTOM: 'bottom'
 	    }
 	};
 
@@ -5653,6 +5723,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Grid 의 Data Source 에 해당하는 Collection 정의
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -5670,7 +5741,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} options - 생성자의 option 객체
 	 * @ignore
 	 */
-	var RowList = Collection.extend(/**@lends module:model/data/rowList.prototype */{
+	var RowList = Collection.extend(/** @lends module:model/data/rowList.prototype */{
 	    initialize: function(models, options) {
 	        Collection.prototype.initialize.apply(this, arguments);
 	        _.assign(this, {
@@ -5714,7 +5785,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @returns {Array}  파싱하여 가공된 데이터
 	     */
 	    parse: function(data) {
-	        data = data && data.contents || data;
+	        data = (data && data.contents) || data;
+
 	        return this._formatData(data);
 	    },
 
@@ -5781,6 +5853,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        row._extraData = $.extend(defaultExtraData, row._extraData);
 	        row._button = row._extraData.rowState === 'CHECKED';
 	        row.rowKey = rowKey;
+
 	        return row;
 	    },
 
@@ -5791,6 +5864,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    _createRowKey: function() {
 	        this.lastRowKey += 1;
+
 	        return this.lastRowKey;
 	    },
 
@@ -5809,12 +5883,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        function hasRowSpanData(row, columnName) { // eslint-disable-line no-shadow, require-jsdoc
 	            var extraData = row._extraData;
+
 	            return !!(extraData.rowSpanData && extraData.rowSpanData[columnName]);
 	        }
 	        function setRowSpanData(row, columnName, rowSpanData) { // eslint-disable-line no-shadow, require-jsdoc
 	            var extraData = row._extraData;
-	            extraData.rowSpanData = extraData && extraData.rowSpanData || {};
+	            extraData.rowSpanData = (extraData && extraData.rowSpanData) || {};
 	            extraData.rowSpanData[columnName] = rowSpanData;
+
 	            return extraData;
 	        }
 
@@ -5826,7 +5902,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        isMainRow: true,
 	                        mainRowKey: rowKey
 	                    });
-	                    //rowSpan 된 row 의 자식 rowSpanData 를 가공한다.
+	                    // rowSpan 된 row 의 자식 rowSpanData 를 가공한다.
 	                    subCount = -1;
 	                    for (i = index + 1; i < index + count; i += 1) {
 	                        childRow = rowList[i];
@@ -5842,6 +5918,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 	            });
 	        }
+
 	        return rowList;
 	    },
 
@@ -5853,6 +5930,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    setOriginalRowList: function(rowList) {
 	        this.originalRows = rowList ? this._formatData(rowList) : this.toJSON();
 	        this.originalRowMap = _.indexBy(this.originalRows, 'rowKey');
+
 	        return this.originalRows;
 	    },
 
@@ -5863,6 +5941,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    getOriginalRowList: function(isClone) {
 	        isClone = _.isUndefined(isClone) ? true : isClone;
+
 	        return isClone ? _.clone(this.originalRows) : this.originalRows;
 	    },
 
@@ -5898,6 +5977,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            rowSpanData = row && row.getRowSpanData(columnName);
 	            rowKey = rowSpanData ? rowSpanData.mainRowKey : rowKey;
 	        }
+
 	        return rowKey;
 	    },
 
@@ -5998,6 +6078,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        } else {
 	            rows = this.toJSON();
 	        }
+
 	        return withRawData ? rows : this._removePrivateProp(rows);
 	    },
 
@@ -6012,7 +6093,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    syncRowSpannedData: function(row, columnName, value) {
 	        var index, rowSpanData, i;
 
-	        //정렬 되지 않았을 때만 rowSpan 된 데이터들도 함께 update 한다.
+	        // 정렬 되지 않았을 때만 rowSpan 된 데이터들도 함께 update 한다.
 	        if (this.isRowSpanEnable()) {
 	            rowSpanData = row.getRowSpanData(columnName);
 	            if (!rowSpanData.isMainRow) {
@@ -6026,6 +6107,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    },
 
+	    /* eslint-disable complexity */
 	    /**
 	     * Backbone 에서 sort() 실행시 내부적으로 사용되는 메소드.
 	     * @param {Row} a 비교할 앞의 모델
@@ -6055,8 +6137,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (!ascending) {
 	            result = -result;
 	        }
+
 	        return result;
 	    },
+	    /* eslint-enable complexity */
 
 	    /**
 	     * rowList 에서 내부에서만 사용하는 property 를 제거하고 반환한다.
@@ -6078,8 +6162,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @param {boolean} options.keepRowSpanData - rowSpan이 mainRow를 삭제하는 경우 데이터를 유지할지 여부
 	     */
 	    removeRow: function(rowKey, options) {
-	        var row = this.get(rowKey),
-	            rowSpanData, nextRow, removedData;
+	        var row = this.get(rowKey);
+	        var rowSpanData, nextRow, removedData, currentIndex;
 
 	        if (!row) {
 	            return;
@@ -6088,8 +6172,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (options && options.keepRowSpanData) {
 	            removedData = _.clone(row.attributes);
 	        }
+
+	        currentIndex = this.indexOf(row);
 	        rowSpanData = _.clone(row.getRowSpanData());
-	        nextRow = this.at(this.indexOf(row) + 1);
+	        nextRow = this.at(currentIndex + 1);
 
 	        this.remove(row, {
 	            silent: true
@@ -6099,7 +6185,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (options && options.removeOriginalData) {
 	            this.setOriginalRowList();
 	        }
-	        this.trigger('remove');
+	        this.trigger('remove', rowKey, currentIndex);
 	    },
 
 	    /**
@@ -6186,6 +6272,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        };
 
 	        this.add(modelList, addOptions);
+
 	        this._syncRowSpanDataForAppend(options.at, modelList.length, options.extendPrevRowSpan);
 	        this.trigger('add', modelList, options);
 
@@ -6248,6 +6335,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            row = this.get(rowKey);
 	            value = row && row.get(columnName);
 	        }
+
 	        return value;
 	    },
 
@@ -6266,8 +6354,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            row.set(columnName, value, {
 	                silent: silent
 	            });
+
 	            return true;
 	        }
+
 	        return false;
 	    },
 
@@ -6279,6 +6369,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    getColumnValues: function(columnName, isJsonString) {
 	        var valueList = this.pluck(columnName);
+
 	        return isJsonString ? JSON.stringify(valueList) : valueList;
 	    },
 
@@ -6319,6 +6410,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    getRowSpanData: function(rowKey, columnName) {
 	        var row = this.get(rowKey);
+
 	        return row ? row.getRowSpanData(columnName) : null;
 	    },
 
@@ -6522,6 +6614,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (typeof value === 'object') {
 	                return (JSON.stringify(value) !== JSON.stringify(originalRow[columnName]));
 	            }
+
 	            return value !== originalRow[columnName];
 	        }, this);
 
@@ -6568,13 +6661,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        }, this);
 
-	        //삭제된 행 추출
+	        // 삭제된 행 추출
 	        _.each(original, function(obj, rowKey) {
 	            var item = rowKeyOnly ? obj.rowKey : _.omit(obj, ignoredColumns);
 	            if (!current[rowKey]) {
 	                result.deletedRows.push(item);
 	            }
 	        }, this);
+
 	        return result;
 	    },
 
@@ -6750,6 +6844,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                });
 	            }
 	        });
+
 	        return errorRows;
 	    },
 
@@ -6808,6 +6903,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    getElement: function(rowKey, columnName) {
 	        var mainRowKey = this.getMainRowKey(rowKey, columnName);
+
 	        return this.domState.getElement(mainRowKey, columnName);
 	    },
 
@@ -6848,6 +6944,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Base class for Collections
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var Backbone = __webpack_require__(9);
@@ -6857,7 +6954,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @module base/collection
 	 * @ignore
 	 */
-	var Collection = Backbone.Collection.extend(/**@lends module:base/collection.prototype */{
+	var Collection = Backbone.Collection.extend(/** @lends module:base/collection.prototype */{
 	    /**
 	     * collection 내 model 들의 event listener 를 제거하고 메모리에서 해제한다.
 	     * @returns {object} this object
@@ -6884,6 +6981,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Grid 의 Data Source 에 해당하는 Model 정의
 	 * @author NHN Ent. FE Development Lab
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -6915,7 +7013,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @extends module:base/model
 	 * @ignore
 	 */
-	var Row = Model.extend(/**@lends module:model/data/row.prototype */{
+	var Row = Model.extend(/** @lends module:model/data/row.prototype */{
 	    initialize: function() {
 	        Model.prototype.initialize.apply(this, arguments);
 	        this.extraDataManager = new ExtraDataManager(this.get('_extraData'));
@@ -6975,6 +7073,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (!data._extraData) {
 	            data._extraData = {};
 	        }
+
 	        return data;
 	    },
 
@@ -7171,6 +7270,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return this.extraDataManager.getRowState();
 	    },
 
+	    /* eslint-disable complexity */
 	    /**
 	     * Returns an array of all className, related with given columnName.
 	     * @param {String} columnName - Column name
@@ -7202,6 +7302,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        return this._makeUniqueStringArray(classNameList);
 	    },
+	    /* eslint-enable complexity */
 
 	    /**
 	     * Returns a new array, which splits all comma-separated strings in the targetList and removes duplicated item.
@@ -7210,6 +7311,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    _makeUniqueStringArray: function(targetArray) {
 	        var singleStringArray = _.uniq(targetArray.join(' ').split(' '));
+
 	        return _.without(singleStringArray, '');
 	    },
 
@@ -7367,34 +7469,40 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * List type 의 경우 데이터 값과 editOptions.listItems 의 text 값이 다르기 때문에
 	     * text 로 전환해서 반환할 때 처리를 하여 변환한다.
 	     *
-	     * @param {String} columnName   컬럼명
-	     * @returns {String} text 형태로 가공된 문자열
+	     * @param {string} columnName - Column name
+	     * @param {boolean} useText - Whether returns concatenated text or values
+	     * @returns {string} Concatenated text or values of "listItems" option
 	     * @private
 	     */
-	    _getListTypeVisibleText: function(columnName) {
+	    _getStringOfListItems: function(columnName, useText) {
 	        var value = this.get(columnName);
 	        var columnModel = this.columnModel.getColumnModel(columnName);
-	        var resultListItems, editOptionList, typeExpected, valueList;
+	        var resultListItems, editOptionList, typeExpected, valueList, hasListItems;
 
 	        if (snippet.isExisty(snippet.pick(columnModel, 'editOptions', 'listItems'))) {
 	            resultListItems = this.executeRelationCallbacksAll(['listItems'])[columnName];
-	            editOptionList = resultListItems && resultListItems.listItems ?
-	                    resultListItems.listItems : columnModel.editOptions.listItems;
+	            hasListItems = resultListItems && resultListItems.listItems;
+	            editOptionList = hasListItems ? resultListItems.listItems : columnModel.editOptions.listItems;
 
 	            typeExpected = typeof editOptionList[0].value;
 	            valueList = util.toString(value).split(',');
+
 	            if (typeExpected !== typeof valueList[0]) {
 	                valueList = _.map(valueList, function(val) {
 	                    return util.convertValueType(val, typeExpected);
 	                });
 	            }
+
 	            _.each(valueList, function(val, index) {
 	                var item = _.findWhere(editOptionList, {value: val});
-	                valueList[index] = item && item.value || '';
+	                var str = (item && (useText ? item.text : item.value)) || '';
+
+	                valueList[index] = str;
 	            }, this);
 
 	            return valueList.join(',');
 	        }
+
 	        return '';
 	    },
 
@@ -7429,17 +7537,19 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    /**
 	     * Returns the text string to be used when copying the cell value to clipboard.
-	     * @param {String} columnName - column name
-	     * @returns {String}
+	     * @param {string} columnName - column name
+	     * @returns {string}
 	     */
 	    getValueString: function(columnName) {
-	        var editType = this.columnModel.getEditType(columnName);
-	        var column = this.columnModel.getColumnModel(columnName);
+	        var columnModel = this.columnModel;
+	        var copyText = columnModel.copyVisibleTextOfEditingColumn(columnName);
+	        var editType = columnModel.getEditType(columnName);
+	        var column = columnModel.getColumnModel(columnName);
 	        var value = this.get(columnName);
 
 	        if (this._isListType(editType)) {
 	            if (snippet.isExisty(snippet.pick(column, 'editOptions', 'listItems', 0, 'value'))) {
-	                value = this._getListTypeVisibleText(columnName);
+	                value = this._getStringOfListItems(columnName, copyText);
 	            } else {
 	                throw new Error('Check "' + columnName +
 	                    '"\'s editOptions.listItems property out in your ColumnModel.');
@@ -7529,6 +7639,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Grid 의 Data Source 에 해당하는 Model 정의
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -7541,7 +7652,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @extends module:base/model
 	 * @ignore
 	 */
-	var ExtraDataManager = snippet.defineClass(/**@lends module:model/data/extraData.prototype */{
+	var ExtraDataManager = snippet.defineClass(/** @lends module:model/data/extraData.prototype */{
 	    init: function(data) {
 	        this.data = data || {};
 	    },
@@ -7570,6 +7681,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                mainRowKey: rowKey
 	            };
 	        }
+
 	        return rowSpanData;
 	    },
 
@@ -7595,6 +7707,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                result.checked = true;
 	            default: // eslint-disable-line no-fallthrough
 	        }
+
 	        return result;
 	    },
 
@@ -7681,6 +7794,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                arrayPush.apply(classNameList, classNameData.column[columnName]);
 	            }
 	        }
+
 	        return classNameList;
 	    },
 
@@ -7692,8 +7806,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @private
 	     */
 	    _removeClassNameFromArray: function(classNameList, className) {
-	        //배열 요소가 'class1 class2' 와 같이 두개 이상의 className을 포함할 수 있어, join & split 함.
+	        // 배열 요소가 'class1 class2' 와 같이 두개 이상의 className을 포함할 수 있어, join & split 함.
 	        var singleNameList = classNameList.join(' ').split(' ');
+
 	        return _.without(singleNameList, className);
 	    },
 
@@ -7753,6 +7868,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Event class for public event of Grid
 	 * @author NHN Ent. FE Development Lab
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -7773,7 +7889,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @module event/gridEvent
 	 * @param {Object} data - Event data for handler
 	 */
-	var GridEvent = snippet.defineClass(/**@lends module:event/gridEvent.prototype */{
+	var GridEvent = snippet.defineClass(/** @lends module:event/gridEvent.prototype */{
 	    init: function(nativeEvent, data) {
 	        this._stopped = false;
 	        if (nativeEvent) {
@@ -7863,6 +7979,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	* @fileoverview 유틸리티 메서드 모음
 	* @author NHN Ent. FE Development Team
 	*/
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -8043,8 +8160,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                snippet.forEach(targetObj, function(item, key) {
 	                    result = (item === distObj[key]);
+
 	                    return result;
 	                });
+
 	                return result;
 	            };
 
@@ -8054,10 +8173,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return false;
 	        } else if (_.isObject(target)) {
 	            isDiff = !compareObject(target, dist) || !compareObject(dist, target);
+
 	            return !isDiff;
 	        } else if (target !== dist) {
 	            return false;
 	        }
+
 	        return true;
 	    },
 
@@ -8071,6 +8192,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (_.isString(target)) {
 	            return !target.length;
 	        }
+
 	        return _.isUndefined(target) || _.isNull(target);
 	    },
 
@@ -8094,6 +8216,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                htmlString.replace(/<\/?(?:h[1-5]|[a-z]+(?::[a-z]+)?)[^>]*>/ig, '')
 	            ));
 	        }
+
 	        return htmlString;
 	    },
 
@@ -8107,6 +8230,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (_.isUndefined(value) || _.isNull(value)) {
 	            return '';
 	        }
+
 	        return String(value);
 	    },
 
@@ -8117,6 +8241,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    getUniqueKey: function() {
 	        this.uniqueId += 1;
+
 	        return this.uniqueId;
 	    },
 
@@ -8188,6 +8313,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        } else if (type === 'boolean') {
 	            return Boolean(value);
 	        }
+
 	        return value;
 	    },
 
@@ -8217,6 +8343,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            min = max;
 	            max = temp;
 	        }
+
 	        return Math.max(min, Math.min(value, max));
 	    },
 
@@ -8285,6 +8412,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Utilities for clipboard data
 	 * @author NHN Ent. Fe Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -8379,8 +8507,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return _.map(text.split(/\r?\n/), function(row) {
 	            return _.map(row.split('\t'), function(column) {
 	                column = clipboardUtil.removeDoubleQuotes(column);
+
 	                return column.replace(CUSTOM_LF_REGEXP, LF)
-	                                .replace(CUSTOM_CR_REGEXP, CR);
+	                    .replace(CUSTOM_CR_REGEXP, CR);
 	            });
 	        });
 	    },
@@ -8406,7 +8535,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    removeDoubleQuotes: function(text) {
 	        if (text.match(CUSTOM_LF_REGEXP)) {
 	            text = text.substring(1, text.length - 1)
-	                        .replace(/""/g, '"');
+	                .replace(/""/g, '"');
 	        }
 
 	        return text;
@@ -8420,7 +8549,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    replaceNewlineToSubchar: function(text) {
 	        return text.replace(/"([^"]|"")*"/g, function(value) {
 	            return value.replace(LF, CUSTOM_LF_SUBCHAR)
-	                        .replace(CR, CUSTOM_CR_SUBCHAR);
+	                .replace(CR, CUSTOM_CR_SUBCHAR);
 	        });
 	    }
 	};
@@ -8439,6 +8568,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	* @fileoverview class name constants.
 	* @author NHN Ent. FE Development Team
 	*/
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -8482,8 +8612,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    RSIDE_AREA: 'rside-area',
 	    HEAD_AREA: 'head-area',
 	    BODY_AREA: 'body-area',
-	    FOOT_AREA: 'foot-area',
-	    FOOT_AREA_RIGHT: 'foot-area-right',
+	    SUMMARY_AREA: 'summary-area',
+	    SUMMARY_AREA_TOP: 'summary-area-top',
+	    SUMMARY_AREA_BOTTOM: 'summary-area-bottom',
+	    SUMMARY_AREA_RIGHT: 'summary-area-right',
+	    SUMMARY_AREA_RIGHT_TOP: 'summary-area-right-top',
+	    SUMMARY_AREA_RIGHT_BOTTOM: 'summary-area-right-bottom',
 
 	    // header
 	    COLUMN_RESIZE_CONTAINER: 'column-resize-container',
@@ -8513,6 +8647,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    // table
 	    TABLE: 'table',
+
+	    // row style
+	    ROW_ODD: 'row-odd',
+	    ROW_EVEN: 'row-even',
 
 	    // cell style
 	    CELL: 'cell',
@@ -8576,12 +8714,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview module:model/dimension
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
 
 	var Model = __webpack_require__(13);
-	var dimensionConstMap = __webpack_require__(14).dimension;
+	var constMap = __webpack_require__(14);
+	var dimensionConstMap = constMap.dimension;
+	var summaryPositionConst = constMap.summaryPosition;
 
 	var TABLE_BORDER_WIDTH = dimensionConstMap.TABLE_BORDER_WIDTH;
 	var CELL_BORDER_WIDTH = dimensionConstMap.CELL_BORDER_WIDTH;
@@ -8594,7 +8735,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @extends module:base/model
 	 * @ignore
 	 */
-	var Dimension = Model.extend(/**@lends module:model/dimension.prototype */{
+	var Dimension = Model.extend(/** @lends module:model/dimension.prototype */{
 	    initialize: function(attrs, options) {
 	        Model.prototype.initialize.apply(this, arguments);
 
@@ -8607,7 +8748,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (options.domEventBus) {
 	            this.listenTo(options.domEventBus, 'windowResize', this._onResizeWindow);
 	            this.listenTo(options.domEventBus, 'dragmove:resizeHeight',
-	                    _.debounce(_.bind(this._onDragMoveForHeight, this)));
+	                _.debounce(_.bind(this._onDragMoveForHeight, this)));
 	        }
 
 	        this._resetSyncHeightHandler();
@@ -8621,7 +8762,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        headerHeight: 0,
 	        bodyHeight: 0,
-	        footerHeight: 0,
+
+	        summaryHeight: 0,
+	        summaryPosition: null,
 
 	        resizeHandleHeight: 0,
 	        paginationHeight: 0,
@@ -8796,7 +8939,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @private
 	     */
 	    _calcRealBodyHeight: function(height) {
-	        var extraHeight = this.get('headerHeight') + this.get('footerHeight') + TABLE_BORDER_WIDTH;
+	        var extraHeight = this.get('headerHeight') + this.get('summaryHeight') + TABLE_BORDER_WIDTH;
 
 	        return height - extraHeight;
 	    },
@@ -8895,10 +9038,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    /**
 	     * Returns the offset.top of body
-	     * @returns {number}
+	     * @returns    {number}
 	     */
 	    getBodyOffsetTop: function() {
-	        return this.get('offsetTop') + this.get('headerHeight')
+	        var offsetTop = this.domState.getOffset().top;
+	        var summaryHeight = this.get('summaryPosition') === summaryPositionConst.TOP ? this.get('summaryHeight') : 0;
+
+	        return offsetTop + this.get('headerHeight') + summaryHeight
 	            + CELL_BORDER_WIDTH + TABLE_BORDER_WIDTH;
 	    },
 
@@ -8910,7 +9056,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @private
 	     */
 	    getPositionFromBodyArea: function(pageX, pageY) {
-	        var bodyOffsetX = this.get('offsetLeft');
+	        var bodyOffsetX = this.domState.getOffset().left;
 	        var bodyOffsetY = this.getBodyOffsetTop();
 
 	        return {
@@ -8931,6 +9077,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Manage coordinates of rows
 	 * @author NHN Ent. FE Development Lab
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -8946,7 +9093,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @extends module:base/model
 	 * @ignore
 	 */
-	var CoordRow = Model.extend(/**@lends module:model/coordRow.prototype */{
+	var CoordRow = Model.extend(/** @lends module:model/coordRow.prototype */{
 	    initialize: function(attrs, options) {
 	        this.dataModel = options.dataModel;
 	        this.dimensionModel = options.dimensionModel;
@@ -9068,6 +9215,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    getHeight: function(rowKey) {
 	        var index = this.dataModel.indexOfRowKey(rowKey);
+
 	        return this.getHeightAt(index);
 	    },
 
@@ -9078,6 +9226,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    getOffset: function(rowKey) {
 	        var index = this.dataModel.indexOfRowKey(rowKey);
+
 	        return this.getOffsetAt(index);
 	    },
 
@@ -9129,6 +9278,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Manage coordinates of rows
 	 * @author NHN Ent. FE Development Lab
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -9149,7 +9299,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @extends module:base/model
 	 * @ignore
 	 */
-	var CoordColumn = Model.extend(/**@lends module:model/coordColumn.prototype */{
+	var CoordColumn = Model.extend(/** @lends module:model/coordColumn.prototype */{
 	    initialize: function(attrs, options) {
 	        this.dimensionModel = options.dimensionModel;
 	        this.columnModel = options.columnModel;
@@ -9381,6 +9531,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                columnIndexes.push(index);
 	            }
 	        });
+
 	        return this._distributeExtraWidthEqually(widths, totalExtraWidth, columnIndexes);
 	    },
 
@@ -9635,6 +9786,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Converts coordinates to index of rows and columns
 	 * @author NHN Ent. FE Development Lab
 	 */
+
 	'use strict';
 
 	var snippet = __webpack_require__(7);
@@ -9652,7 +9804,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @extends module:base/model
 	 * @ignore
 	 */
-	var CoordConverter = Model.extend(/**@lends module:model/coordConverter.prototype */{
+	var CoordConverter = Model.extend(/** @lends module:model/coordConverter.prototype */{
 	    initialize: function(attrs, options) {
 	        this.dataModel = options.dataModel;
 	        this.columnModel = options.columnModel;
@@ -9898,6 +10050,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Focus Model
 	 * @author NHN Ent. FE Development Lab
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -9914,7 +10067,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @extends module:base/model
 	 * @ignore
 	 */
-	var Focus = Model.extend(/**@lends module:model/focus.prototype */{
+	var Focus = Model.extend(/** @lends module:model/focus.prototype */{
 	    initialize: function(attrs, options) {
 	        var editEventName = options.editingEvent + ':cell';
 	        var domEventBus;
@@ -9970,7 +10123,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	         * address of the editing cell
 	         * @type {{rowKey:(String|Number), columnName:String}}
 	         */
-	        editingAddress: null
+	        editingAddress: null,
+
+	        /**
+	         * Whether focus state is active or not
+	         * @type {Boolean}
+	         */
+	        active: false
 	    },
 
 	    /**
@@ -10002,12 +10161,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.focusIn(ev.rowKey, ev.columnName);
 	    },
 
+	    /* eslint-disable complexity */
 	    /**
 	     * Event handler for key:move event
 	     * @param {module:event/gridEvent} ev - GridEvent
 	     * @private
 	     */
-	    _onKeyMove: function(ev) {  // eslint-disable-line complexity
+	    _onKeyMove: function(ev) {
 	        var rowKey, columnName;
 
 	        switch (ev.command) {
@@ -10051,6 +10211,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        this.focus(rowKey, columnName, true);
 	    },
+	    /* eslint-enable complexity */
 
 	    /**
 	     * Event handler for key:edit event
@@ -10137,6 +10298,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return String(curRowKey) === String(rowKey) && curColumnName === columnName;
 	    },
 
+	    /* eslint-disable complexity */
 	    /**
 	     * Focus to the cell identified by given rowKey and columnName.
 	     * @param {Number|String} rowKey - rowKey
@@ -10145,6 +10307,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @returns {Boolean} true if focused cell is changed
 	     */
 	    focus: function(rowKey, columnName, isScrollable) {
+	        if (!this.get('active')) {
+	            this.set('active', true);
+	        }
+
 	        if (!this._isValidCell(rowKey, columnName) ||
 	            util.isMetaColumn(columnName) ||
 	            this.isCurrentCell(rowKey, columnName)) {
@@ -10169,6 +10335,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        return true;
 	    },
+	    /* eslint-enable complexity */
 
 	    /**
 	     * Trigger 'focusChange' event and returns the result
@@ -10259,6 +10426,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (row && column) {
 	            result = this.focusIn(row.get('rowKey'), column.name, isScrollable);
 	        }
+
 	        return result;
 	    },
 
@@ -10271,13 +10439,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    /**
 	     * If the grid has an element which has a focus, make sure that focusModel has a valid data,
-	     * Otherwise call focusModel.blur().
+	     * Otherwise change the focus state.
 	     */
 	    refreshState: function() {
 	        var restored;
 
 	        if (!this.domState.hasFocusedElement()) {
-	            this.blur();
+	            this.set('active', false);
 	        } else if (!this.has()) {
 	            restored = this.restore();
 	            if (!restored) {
@@ -10287,7 +10455,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 
 	    /**
-	     * 디자인 blur 처리한다.
+	     * Apply blur state on cell
 	     * @returns {Model.Focus} This object
 	     */
 	    blur: function() {
@@ -10300,6 +10468,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 
 	        this.trigger('blur', this.get('rowKey'), this.get('columnName'));
+
+	        this.set({
+	            rowKey: null,
+	            columnName: null
+	        });
 
 	        return this;
 	    },
@@ -10342,6 +10515,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (checkValid) {
 	            return this._isValidCell(rowKey, columnName);
 	        }
+
 	        return !util.isBlank(rowKey) && !util.isBlank(columnName);
 	    },
 
@@ -10362,6 +10536,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            });
 	            restored = true;
 	        }
+
 	        return restored;
 	    },
 
@@ -10460,6 +10635,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                rowKey = row.get('rowKey');
 	            }
 	        }
+
 	        return rowKey;
 	    },
 
@@ -10480,6 +10656,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            index = Math.max(Math.min(columnIndex + offset, columns.length - 1), 0);
 	            columnName = columns[index] && columns[index].name;
 	        }
+
 	        return columnName;
 	    },
 
@@ -10723,13 +10900,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Rendering 모델
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
 	var snippet = __webpack_require__(7);
 
 	var Model = __webpack_require__(13);
-	var RowList = __webpack_require__(29);
+	var Row = __webpack_require__(29);
+	var RowList = __webpack_require__(30);
 	var renderStateMap = __webpack_require__(14).renderState;
 	var CELL_BORDER_WIDTH = __webpack_require__(14).dimension.CELL_BORDER_WIDTH;
 
@@ -10743,9 +10922,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} options - Options
 	 * @ignore
 	 */
-	var Renderer = Model.extend(/**@lends module:model/renderer.prototype */{
+	var Renderer = Model.extend(/** @lends module:model/renderer.prototype */{
 	    initialize: function(attrs, options) {
-	        var lside, rside, rowListOptions;
+	        var rowListOptions;
+	        var partialLside, partialRside;
 
 	        _.assign(this, {
 	            dataModel: options.dataModel,
@@ -10762,20 +10942,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	            focusModel: this.focusModel
 	        };
 
-	        lside = new RowList([], rowListOptions);
-	        rside = new RowList([], rowListOptions);
+	        partialLside = new RowList([], rowListOptions);
+	        partialRside = new RowList([], rowListOptions);
+
 	        this.set({
-	            lside: lside,
-	            rside: rside
+	            lside: [],
+	            rside: [],
+	            partialLside: partialLside,
+	            partialRside: partialRside
 	        });
 
 	        this.listenTo(this.columnModel, 'columnModelChange change', this._onColumnModelChange)
-	            .listenTo(this.dataModel, 'add remove sort reset delRange', this._onDataListChange)
-	            .listenTo(this.dataModel, 'add', this._onAddDataModel)
+	            .listenTo(this.dataModel, 'sort reset', this._onDataModelChange)
+	            .listenTo(this.dataModel, 'delRange', this._onRangeDataModelChange)
+	            .listenTo(this.dataModel, 'add', this._onAddDataModelChange)
+	            .listenTo(this.dataModel, 'remove', this._onRemoveDataModelChange)
 	            .listenTo(this.dataModel, 'beforeReset', this._onBeforeResetData)
 	            .listenTo(this.focusModel, 'change:editingAddress', this._onEditingAddressChange)
-	            .listenTo(lside, 'valueChange', this._executeRelation)
-	            .listenTo(rside, 'valueChange', this._executeRelation)
+	            .listenTo(partialLside, 'valueChange', this._executeRelation)
+	            .listenTo(partialRside, 'valueChange', this._executeRelation)
 	            .listenTo(this.coordRowModel, 'reset', this._onChangeRowHeights)
 	            .listenTo(this.dimensionModel, 'columnWidthChanged', this.finishEditing)
 	            .listenTo(this.dimensionModel, 'change:width', this._updateMaxScrollLeft)
@@ -10805,6 +10990,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        startNumber: 1,
 	        lside: null,
 	        rside: null,
+	        partialLside: null,
+	        partialRside: null,
 	        showDummyRows: false,
 	        dummyRowCount: 0,
 
@@ -10827,6 +11014,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    /**
 	     * Event handler for changing startIndex or endIndex.
 	     * @param {Object} model - Renderer model fired event
+	     * @private
 	     */
 	    _onChangeIndex: function(model) {
 	        var changedData = model.changed;
@@ -10844,14 +11032,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    _onChangeRowHeights: function() {
 	        var coordRowModel = this.coordRowModel;
-	        var lside = this.get('lside');
-	        var rside = this.get('rside');
-	        var len = lside.length;
+	        var lside = this.get('partialLside');
+	        var rside = this.get('partialRside');
 	        var i = 0;
+	        var len = lside.length;
 	        var height;
 
 	        for (; i < len; i += 1) {
 	            height = coordRowModel.getHeightAt(i);
+
 	            lside.at(i).set('height', height);
 	            rside.at(i).set('height', height);
 	        }
@@ -10989,7 +11178,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @returns {Object} collection  해당 영역의 랜더 데이터 콜랙션
 	     */
 	    getCollection: function(whichSide) {
-	        return this.get(snippet.isString(whichSide) ? whichSide.toLowerCase() + 'side' : 'rside');
+	        var attrName = this._getPartialWhichSideType(whichSide);
+
+	        return this.get(attrName);
+	    },
+
+	    /**
+	     * Get string of partial which side type
+	     * @param {string} whichSide - Type of which side (L|R)
+	     * @returns {string} String of appened prefix value 'partial'
+	     * @private
+	     */
+	    _getPartialWhichSideType: function(whichSide) {
+	        return snippet.isString(whichSide) ? 'partial' + whichSide + 'side' : 'partialRside';
 	    },
 
 	    /**
@@ -10998,9 +11199,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    _onColumnModelChange: function() {
 	        this.set({scrollTop: 0}, {silent: true});
+
+	        this._resetViewModelList();
 	        this._setRenderingRange(true);
 
 	        this.refresh({
+	            change: false,
 	            columnModelChanged: true
 	        });
 	    },
@@ -11009,7 +11213,68 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * Event handler for changing data list
 	     * @private
 	     */
-	    _onDataListChange: function() {
+	    _onDataModelChange: function() {
+	        this._resetViewModelList();
+	        this._setRenderingRange(true);
+
+	        this.refresh({
+	            type: 'reset',
+	            dataListChanged: true
+	        });
+	    },
+
+	    /**
+	     * Event handler for adding data list
+	     * @param {array} modelList - List of added item
+	     * @param {object} options - Info of added item
+	     * @private
+	     */
+	    _onAddDataModelChange: function(modelList, options) {
+	        var columnNamesMap = this._getColumnNamesOfEachSide();
+	        var at = options.at;
+	        var height, viewData, rowNum;
+	        var viewModel;
+
+	        this._setRenderingRange(true);
+
+	        // the type of modelList is array or collection
+	        modelList = _.isArray(modelList) ? modelList : modelList.models;
+
+	        _.each(modelList, function(model, index) {
+	            height = this.coordRowModel.getHeightAt(index);
+
+	            _.each(['lside', 'rside'], function(attrName) {
+	                rowNum = at + index + 1;
+	                viewData = this._createViewDataFromDataModel(
+	                    model, columnNamesMap[attrName], height, rowNum);
+
+	                viewModel = this._createRowModel(viewData, true);
+
+	                this.get(attrName).splice(at + index, 0, viewModel);
+	            }, this);
+	        }, this);
+
+	        this.refresh({
+	            type: 'add',
+	            dataListChanged: true
+	        });
+
+	        if (options.focus) {
+	            this.focusModel.focusAt(options.at, 0);
+	        }
+	    },
+
+	    /**
+	     * Event handler for removing data list
+	     * @param {number|string} rowKey - rowKey of the removed row
+	     * @param {number} removedIndex - Index of the removed row
+	     * @private
+	     */
+	    _onRemoveDataModelChange: function(rowKey, removedIndex) {
+	        _.each(['lside', 'rside'], function(attrName) {
+	            this.get(attrName).splice(removedIndex, 1);
+	        }, this);
+
 	        this._setRenderingRange(true);
 
 	        this.refresh({
@@ -11018,15 +11283,38 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 
 	    /**
-	     * Event handler for 'add' event on dataModel.
-	     * @param  {module:model/data/rowList} dataModel - data model
-	     * @param  {Object} options - options for appending. See {@link module:model/data/rowList#append}
+	     * Event handler for deleting cell data
+	     * @param {array} rowKeys - List of row key
+	     * @param {array} columnNames - List of colum name
 	     * @private
 	     */
-	    _onAddDataModel: function(dataModel, options) {
-	        if (options.focus) {
-	            this.focusModel.focusAt(options.at, 0);
-	        }
+	    _onRangeDataModelChange: function(rowKeys, columnNames) {
+	        var columnModel = this.columnModel;
+
+	        this._setRenderingRange(true);
+
+	        _.each(['partialLside', 'partialRside'], function(attrName) {
+	            _.each(this.get(attrName).models, function(model) {
+	                var rowKey = model.get('rowKey');
+	                var changedRow = _.contains(rowKeys, rowKey);
+
+	                if (changedRow) {
+	                    _.each(columnNames, function(columnName) {
+	                        if (columnModel.getColumnModel(columnName).editOptions) {
+	                            this._updateCellData(rowKey, columnName, {
+	                                value: '',
+	                                formattedValue: ''
+	                            });
+	                        }
+	                    }, this);
+	                }
+	            }, this);
+	        }, this);
+
+	        this.refresh({
+	            type: 'delRange',
+	            dataListChanged: true
+	        });
 	    },
 
 	    /**
@@ -11066,8 +11354,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    _createViewDataFromDataModel: function(rowDataModel, columnNames, height, rowNum) {
 	        var viewData = {
-	            height: height,
 	            rowNum: rowNum,
+	            height: height,
 	            rowKey: rowDataModel.get('rowKey'),
 	            _extraData: rowDataModel.get('_extraData')
 	        };
@@ -11094,50 +11382,108 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var columnModels = this.columnModel.getVisibleColumns(null, true);
 	        var columnNames = _.pluck(columnModels, 'name');
 
-	        return {
+	        var test = {
 	            lside: columnNames.slice(0, frozenCount),
 	            rside: columnNames.slice(frozenCount)
 	        };
+
+	        return test;
 	    },
 
 	    /**
-	     * Resets specified view model list.
-	     * @param  {String} attrName - 'lside' or 'rside'
-	     * @param  {Object} viewData - Converted data for rendering view
+	     * Add view model list by range
+	     * @param {number} startIndex - Index of start row
+	     * @param {number} endIndex - Index of end row
 	     * @private
 	     */
-	    _resetViewModelList: function(attrName, viewData) {
-	        this.get(attrName).clear().reset(viewData, {
-	            parse: true
-	        });
-	    },
-
-	    /**
-	     * Resets both sides(lside, rside) of view model list with given range of data model list.
-	     * @param  {Number} startIndex - Start index
-	     * @param  {Number} endIndex - End index
-	     * @private
-	     */
-	    _resetAllViewModelListWithRange: function(startIndex, endIndex) {
+	    _addViewModelListWithRange: function(startIndex, endIndex) {
 	        var columnNamesMap = this._getColumnNamesOfEachSide();
-	        var rowNum = this.get('startNumber') + startIndex;
-	        var lsideData = [];
-	        var rsideData = [];
-	        var rowDataModel, height, i;
+	        var rowDataModel, height, index;
 
 	        if (startIndex >= 0 && endIndex >= 0) {
-	            for (i = startIndex; i <= endIndex; i += 1) {
-	                rowDataModel = this.dataModel.at(i);
-	                height = this.coordRowModel.getHeightAt(i);
+	            for (index = startIndex; index <= endIndex; index += 1) {
+	                rowDataModel = this.dataModel.at(index);
+	                height = this.coordRowModel.getHeightAt(index);
 
-	                lsideData.push(this._createViewDataFromDataModel(rowDataModel, columnNamesMap.lside, height, rowNum));
-	                rsideData.push(this._createViewDataFromDataModel(rowDataModel, columnNamesMap.rside, height, rowNum));
-	                rowNum += 1;
+	                this._addViewModelList(rowDataModel, columnNamesMap, height, index);
 	            }
 	        }
+	    },
 
-	        this._resetViewModelList('lside', lsideData);
-	        this._resetViewModelList('rside', rsideData);
+	    /**
+	     * Add view model list on each side
+	     * @param {object} rowDataModel - Data model of row
+	     * @param {object} columnNamesMap - Map of column names
+	     * @param {number} height - Height of row
+	     * @param {number} index - Index of row
+	     * @private
+	     */
+	    _addViewModelList: function(rowDataModel, columnNamesMap, height, index) {
+	        _.each(['lside', 'rside'], function(attrName) {
+	            var viewData;
+
+	            if (!this.get(attrName)[index]) {
+	                viewData = this._createViewDataFromDataModel(
+	                    rowDataModel, columnNamesMap[attrName], height, index + 1);
+
+	                this.get(attrName)[index] = this._createRowModel(viewData, true);
+	            }
+	        }, this);
+	    },
+
+	    /**
+	     * Update the row number
+	     * @param {number} startIndex - Start index
+	     * @param {number} endIndex - End index
+	     * @private
+	     */
+	    _updateRowNumber: function(startIndex, endIndex) {
+	        var collection = this.get('lside');
+	        var index = startIndex;
+	        var currentModel, rowNum, newRowNum;
+
+	        for (; index <= endIndex; index += 1) {
+	            currentModel = collection[index];
+	            newRowNum = index + 1;
+
+	            if (currentModel) {
+	                rowNum = currentModel.get('rowNum');
+	                newRowNum = index + 1;
+
+	                if (rowNum !== newRowNum) {
+	                    currentModel.set({
+	                        rowNum: newRowNum
+	                    }, {
+	                        silent: true
+	                    });
+
+	                    currentModel.setCell('_number', {
+	                        formattedValue: newRowNum,
+	                        value: newRowNum
+	                    });
+	                }
+	            }
+	        }
+	    },
+
+	    /**
+	     * Reset partial view model list
+	     * @param {number} startIndex - Index of start row
+	     * @param {number} endIndex - Index of end row
+	     * @private
+	     */
+	    _resetPartialViewModelList: function(startIndex, endIndex) {
+	        var originalWhichSide, partialWhichSide;
+	        var viewModelList, partialViewModelList;
+
+	        _.each(['L', 'R'], function(whichSide) {
+	            originalWhichSide = whichSide.toLowerCase() + 'side';
+	            partialWhichSide = this._getPartialWhichSideType(whichSide);
+	            viewModelList = this.get(originalWhichSide);
+	            partialViewModelList = viewModelList.slice(startIndex, endIndex + 1);
+
+	            this.get(partialWhichSide).reset(partialViewModelList);
+	        }, this);
 	    },
 
 	    /**
@@ -11198,31 +11544,43 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            _.times(dummyRowCount, function() {
 	                _.each(['lside', 'rside'], function(listName) {
-	                    this.get(listName).add({
+	                    this.get(listName).push(this._createRowModel({
 	                        height: rowHeight,
 	                        rowNum: rowNum
-	                    });
+	                    }));
 	                }, this);
+
 	                rowNum += 1;
 	            }, this);
 	        }
 	    },
 
+	    /* eslint-disable complexity */
 	    /**
 	     * Refreshes the rendering range and the list of view models, and triggers events.
-	     * @param {Object} options - options
-	     * @param {Boolean} [options.columnModelChanged] - The boolean value whether columnModel has changed
-	     * @param {Boolean} [options.dataListChanged] - The boolean value whether dataModel has changed
+	     * @param {object} options - options
+	     * @param {boolean} [options.columnModelChanged] - The boolean value whether columnModel has changed
+	     * @param {boolean} [options.dataListChanged] - The boolean value whether dataModel has changed
+	     * @param {string} [options.type] - Event type (reset|add|remove)
 	     */
 	    refresh: function(options) {
 	        var columnModelChanged = !!options && options.columnModelChanged;
 	        var dataListChanged = !!options && options.dataListChanged;
+	        var eventType = !!options && options.type;
 	        var startIndex, endIndex, i;
 
 	        startIndex = this.get('startIndex');
 	        endIndex = this.get('endIndex');
 
-	        this._resetAllViewModelListWithRange(startIndex, endIndex);
+	        if (eventType !== 'add' && eventType !== 'delRange') {
+	            this._addViewModelListWithRange(startIndex, endIndex);
+	        }
+
+	        if (eventType !== 'delRange') {
+	            this._updateRowNumber(startIndex, endIndex);
+	        }
+
+	        this._resetPartialViewModelList(startIndex, endIndex);
 	        this._fillDummyRows();
 
 	        if (startIndex >= 0 && endIndex >= 0) {
@@ -11241,6 +11599,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        this._refreshState();
 	    },
+	    /* eslint-enable complexity */
 
 	    /**
 	     * Set state value based on the DataModel.length
@@ -11261,14 +11620,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @private
 	     */
 	    _getCollectionByColumnName: function(columnName) {
-	        var lside = this.get('lside');
+	        var lside = this.get('partialLside');
 	        var collection;
 
 	        if (lside.at(0) && lside.at(0).get(columnName)) {
 	            collection = lside;
 	        } else {
-	            collection = this.get('rside');
+	            collection = this.get('partialRside');
 	        }
+
 	        return collection;
 	    },
 
@@ -11291,7 +11651,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @param {String} columnName   컬럼명
 	     * @returns {object} cellData 셀 데이터
 	     * @example
-	     =>
 	     {
 	         rowKey: rowKey,
 	         columnName: columnName,
@@ -11335,6 +11694,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	                rowModel.setCell(columnName, changes);
 	            }
 	        }, this);
+	    },
+
+	    /**
+	     * Create row model
+	     * @param {object} attrs - Attributes to create
+	     * @param {boolean} parse - Whether calling parse or not
+	     * @returns {object} Row model
+	     * @private
+	     */
+	    _createRowModel: function(attrs, parse) {
+	        return new Row(attrs, {
+	            parse: parse,
+	            dataModel: this.dataModel,
+	            columnModel: this.columnModel,
+	            focusModel: this.focusModel
+	        });
+	    },
+
+	    /**
+	     * Reset view models when value of columModel or dataModel is changed
+	     * @private
+	     */
+	    _resetViewModelList: function() {
+	        _.each(['lside', 'rside'], function(attrName) {
+	            this.set(attrName, new Array(this.dataModel.length));
+	        }, this);
 	    }
 	});
 
@@ -11346,47 +11731,10 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ (function(module, exports, __webpack_require__) {
 
 	/**
-	 * @fileoverview RowList 클래스파일
-	 * @author NHN Ent. FE Development Team
-	 */
-	'use strict';
-
-	var _ = __webpack_require__(6);
-
-	var Collection = __webpack_require__(16);
-	var Row = __webpack_require__(30);
-
-	/**
-	  * View Model rowList collection
-	  * @module model/rowList
-	  * @extends module:base/collection
-	  * @param {Object} rawData - Raw data
-	  * @param {Object} options - Options
-	  * @ignore
-	  */
-	var RowList = Collection.extend(/**@lends module:model/rowList.prototype */{
-	    initialize: function(rawData, options) {
-	        _.assign(this, {
-	            dataModel: options.dataModel,
-	            columnModel: options.columnModel,
-	            focusModel: options.focusModel
-	        });
-	    },
-
-	    model: Row
-	});
-
-	module.exports = RowList;
-
-
-/***/ }),
-/* 30 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	/**
 	 * @fileoverview Row Model for Rendering (View Model)
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -11403,15 +11751,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @extends module:base/model
 	 * @ignore
 	 */
-	var Row = Model.extend(/**@lends module:model/row.prototype */{
-	    initialize: function(attributes) {
+	var Row = Model.extend(/** @lends module:model/row.prototype */{
+	    initialize: function(attributes, options) {
 	        var rowKey = attributes && attributes.rowKey;
-	        var dataModel = this.collection.dataModel;
+	        var dataModel = options.dataModel;
 	        var rowData = dataModel.get(rowKey);
 
 	        this.dataModel = dataModel;
-	        this.columnModel = this.collection.columnModel;
-	        this.focusModel = this.collection.focusModel;
+	        this.columnModel = options.columnModel;
+	        this.focusModel = options.focusModel;
 
 	        if (rowData) {
 	            this.listenTo(rowData, 'change', this._onDataModelChange);
@@ -11461,7 +11809,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @private
 	     */
 	    _getColumnNameList: function() {
-	        var columnModels = this.collection.columnModel.getVisibleColumns(null, true);
+	        var columnModels = this.columnModel.getVisibleColumns(null, true);
 
 	        return _.pluck(columnModels, 'name');
 	    },
@@ -11485,10 +11833,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @private
 	     */
 	    _setRowExtraData: function() {
-	        if (snippet.isUndefined(this.collection)) {
-	            return;
-	        }
-
 	        _.each(this._getColumnNameList(), function(columnName) {
 	            var cellData = this.get(columnName);
 	            var cellState;
@@ -11514,9 +11858,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @override
 	     */
 	    parse: function(data, options) {
-	        var collection = options.collection;
-
-	        return this._formatData(data, collection.dataModel, collection.columnModel, collection.focusModel);
+	        return this._formatData(data, options.dataModel, options.columnModel, options.focusModel);
 	    },
 
 	    /**
@@ -11531,7 +11873,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    _formatData: function(data, dataModel, columnModel, focusModel) {
 	        var rowKey = data.rowKey;
-	        var rowNum = data.rowNum;
 	        var rowHeight = data.height;
 	        var columnData, row;
 
@@ -11550,7 +11891,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            data[columnName] = {
 	                rowKey: rowKey,
-	                rowNum: rowNum,
 	                height: rowHeight,
 	                columnName: columnName,
 	                rowSpan: rowSpanData.count,
@@ -11564,7 +11904,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                listItems: snippet.pick(column, 'editOptions', 'listItems'),
 	                className: this._getClassNameString(columnName, row, focusModel),
 	                columnModel: column,
-	                changed: [] //changed property names
+	                changed: [] // changed property names
 	            };
 	            _.assign(data[columnName], this._getValueAttrs(value, row, column, isTextType));
 	        }, this);
@@ -11683,6 +12023,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (convertedHTML === false) {
 	            convertedHTML = null;
 	        }
+
 	        return convertedHTML;
 	    },
 
@@ -11728,6 +12069,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                isMainRow: true
 	            };
 	        }
+
 	        return rowSpanData;
 	    },
 
@@ -11774,7 +12116,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                silent: this._shouldSetSilently(data, isValueChanged)
 	            });
 	            if (isValueChanged) {
-	                rowIndex = this.collection.dataModel.indexOfRowKey(rowKey);
+	                rowIndex = this.dataModel.indexOfRowKey(rowKey);
 	                this.trigger('valueChange', rowIndex);
 	            }
 	        }
@@ -11806,6 +12148,45 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
+/* 30 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileoverview RowList 클래스파일
+	 * @author NHN Ent. FE Development Team
+	 */
+
+	'use strict';
+
+	var _ = __webpack_require__(6);
+
+	var Collection = __webpack_require__(16);
+	var Row = __webpack_require__(29);
+
+	/**
+	  * View Model rowList collection
+	  * @module model/rowList
+	  * @extends module:base/collection
+	  * @param {Object} rawData - Raw data
+	  * @param {Object} options - Options
+	  * @ignore
+	  */
+	var RowList = Collection.extend(/** @lends module:model/rowList.prototype */{
+	    initialize: function(rawData, options) {
+	        _.assign(this, {
+	            dataModel: options.dataModel,
+	            columnModel: options.columnModel,
+	            focusModel: options.focusModel
+	        });
+	    },
+
+	    model: Row
+	});
+
+	module.exports = RowList;
+
+
+/***/ }),
 /* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11813,6 +12194,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Render model to be used for smart-rendering
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -11834,7 +12216,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @extends module:model/renderer
 	 * @ignore
 	 */
-	var SmartRenderer = Renderer.extend(/**@lends module:model/renderer-smart.prototype */{
+	var SmartRenderer = Renderer.extend(/** @lends module:model/renderer-smart.prototype */{
 	    initialize: function() {
 	        Renderer.prototype.initialize.apply(this, arguments);
 
@@ -11911,6 +12293,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            counts.push(0); // count가 음수인 경우(mainRow가 아닌 경우)에만 최소값을 구함. 없으면 0
 	            result = _.min(counts);
 	        }
+
 	        return result;
 	    },
 
@@ -11974,6 +12357,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Selection Model class
 	 * @author NHN Ent. FE Development Lab
 	 */
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -11993,7 +12377,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} options - Options
 	 * @ignore
 	 */
-	var Selection = Model.extend(/**@lends module:model/selection.prototype */{
+	var Selection = Model.extend(/** @lends module:model/selection.prototype */{
 	    initialize: function(attr, options) {
 	        var domEventBus;
 
@@ -12057,6 +12441,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        if (_.some(columnNames, util.isMetaColumn)) {
 	            gridEvent.stop();
+
 	            return;
 	        }
 
@@ -12198,6 +12583,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                index.column = selectionColumnRange[1];
 	            }
 	        }
+
 	        return index;
 	    },
 
@@ -12611,6 +12997,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                if (columnModel.getCopyOptions(columnName).useFormattedValue) {
 	                    return renderModel.getCellData(row.get('rowKey'), columnName).formattedValue;
 	                }
+
 	                return row.getValueString(columnName);
 	            }).join('\t');
 	        });
@@ -12618,6 +13005,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (this._isSingleCell(columnNames, rowList)) {
 	            return rowValues[0];
 	        }
+
 	        return rowValues.join('\n');
 	    },
 
@@ -12722,6 +13110,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        inputRange = inputRange || this.inputRange;
 	        if (!inputRange) {
 	            this.set('range', null);
+
 	            return;
 	        }
 
@@ -12780,15 +13169,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        });
 
-	         /**
-	          * Occurs when selecting cells
-	          * @event Grid#selection
-	          * @type {module:event/gridEvent}
-	          * @property {Object} range - Range of selection
-	          * @property {Array} range.start - Info of start cell (ex: [rowKey, columName])
-	          * @property {Array} range.end - Info of end cell (ex: [rowKey, columnName])
-	          * @property {Grid} instance - Current grid instance
-	          */
+	        /**
+	         * Occurs when selecting cells
+	         * @event Grid#selection
+	         * @type {module:event/gridEvent}
+	         * @property {Object} range - Range of selection
+	         * @property {Array} range.start - Info of start cell (ex: [rowKey, columName])
+	         * @property {Array} range.end - Info of end cell (ex: [rowKey, columnName])
+	         * @property {Grid} instance - Current grid instance
+	         */
 	        this.trigger('selection', gridEvent);
 	    },
 
@@ -12893,7 +13282,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        startRowSpanDataMap = dataModel.at(spannedRange.row[0]).getRowSpanData();
 	        endRowSpanDataMap = dataModel.at(spannedRange.row[1]).getRowSpanData();
 
-	        //모든 열을 순회하며 각 열마다 설정된 rowSpan 정보에 따라 인덱스를 업데이트 한다.
+	        // 모든 열을 순회하며 각 열마다 설정된 rowSpan 정보에 따라 인덱스를 업데이트 한다.
 	        _.each(columns, function(columnModel) {
 	            param = {
 	                columnName: columnModel.name,
@@ -12910,6 +13299,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }, this);
 
 	        newSpannedRange.row = [Math.min.apply(null, startIndexList), Math.max.apply(null, endIndexList)];
+
 	        return newSpannedRange;
 	    }
 	});
@@ -12925,6 +13315,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Focus 관련 데이터 처리름 담당한다.
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -12941,7 +13332,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} options - options
 	 * @ignore
 	 */
-	var Summary = Model.extend(/**@lends module:model/summary.prototype */{
+	var Summary = Model.extend(/** @lends module:model/summary.prototype */{
 	    initialize: function(attr, options) {
 	        this.dataModel = options.dataModel;
 
@@ -13020,7 +13411,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @private
 	     */
 	    _resetSummaryMap: function() {
-	        this._resetFooterSummaryValue();
+	        this._resetSummarySummaryValue();
 	    },
 
 	    /**
@@ -13028,7 +13419,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @param {Array.<string>} columnNames - An array of column names
 	     * @private
 	     */
-	    _resetFooterSummaryValue: function(columnNames) {
+	    _resetSummarySummaryValue: function(columnNames) {
 	        var targetColumnNames = this.autoColumnNames;
 
 	        if (columnNames) {
@@ -13049,7 +13440,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @private
 	     */
 	    _onChangeData: function(model) {
-	        this._resetFooterSummaryValue(_.keys(model.changed));
+	        this._resetSummarySummaryValue(_.keys(model.changed));
 	    },
 
 	    /**
@@ -13059,7 +13450,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @private
 	     */
 	    _onDeleteRangeData: function(rowKeys, columnNames) {
-	        this._resetFooterSummaryValue(columnNames);
+	        this._resetSummarySummaryValue(columnNames);
 	    },
 
 	    /**
@@ -13078,6 +13469,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 
 	        value = snippet.pick(valueMap, summaryType);
+
 	        return _.isUndefined(value) ? null : value;
 	    }
 	});
@@ -13093,6 +13485,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Clipboard Model
 	 * @author NHN Ent. FE Development Lab
 	 */
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -13107,7 +13500,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} options - Options
 	 * @ignore
 	 */
-	var Clipboard = Model.extend(/**@lends module:model/clipboard.prototype*/{
+	var Clipboard = Model.extend(/** @lends module:model/clipboard.prototype*/{
 	    initialize: function(attr, options) {
 	        Model.prototype.initialize.apply(this, arguments);
 
@@ -13253,6 +13646,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview View factory
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -13271,7 +13665,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var HeaderResizeHandleView = __webpack_require__(51);
 	var BodyView = __webpack_require__(52);
 	var BodyTableView = __webpack_require__(53);
-	var FooterView = __webpack_require__(54);
+	var SummaryView = __webpack_require__(54);
 	var RowListView = __webpack_require__(55);
 	var SelectionLayerView = __webpack_require__(56);
 	var EditingLayerView = __webpack_require__(57);
@@ -13295,7 +13689,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.componentHolder = options.componentHolder;
 
 	        // view options
-	        this.footerOptions = options.footer;
+	        this.summaryOptions = options.summary;
 	        this.heightResizable = options.heightResizable;
 	    },
 
@@ -13334,6 +13728,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (!isOptionEnabled(this.componentHolder.getOptions('pagination'))) {
 	            return null;
 	        }
+
 	        return new PaginationView({
 	            componentHolder: this.componentHolder,
 	            dimensionModel: this.modelManager.dimensionModel,
@@ -13349,6 +13744,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (!isOptionEnabled(this.heightResizable)) {
 	            return null;
 	        }
+
 	        return new HeightResizeHandleView({
 	            dimensionModel: this.modelManager.dimensionModel,
 	            domEventBus: this.domEventBus
@@ -13415,24 +13811,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 
 	    /**
-	     * Creates footer view and returns it.
+	     * Creates summary view and returns it.
 	     * @param {string} whichSide - 'L'(left) or 'R'(right)
 	     * @returns {object}
 	     */
-	    createFooter: function(whichSide) {
+	    createSummary: function(whichSide) {
 	        var templateMap = {};
 
-	        if (!this.footerOptions) {
+	        if (!this.summaryOptions) {
 	            return null;
 	        }
 
-	        _.each(this.footerOptions.columnContent, function(options, columnName) {
+	        _.each(this.summaryOptions.columnContent, function(options, columnName) {
 	            if (_.isFunction(options.template)) {
 	                templateMap[columnName] = options.template;
 	            }
 	        });
 
-	        return new FooterView({
+	        return new SummaryView({
 	            whichSide: whichSide,
 	            columnModel: this.modelManager.columnModel,
 	            renderModel: this.modelManager.renderModel,
@@ -13445,12 +13841,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    /**
 	     * Creates resize handler of header view and returns it.
-	     * @param  {String} whichSide - 'L'(left) or 'R'(right)
+	     * @param {string} whichSide - 'L'(left) or 'R'(right)
+	     * @param {array} handleHeights - Height values of each resize handle
 	     * @returns {module:view/layout/header} New resize handler view instance
 	     */
-	    createHeaderResizeHandle: function(whichSide) {
+	    createHeaderResizeHandle: function(whichSide, handleHeights) {
 	        return new HeaderResizeHandleView({
 	            whichSide: whichSide,
+	            handleHeights: handleHeights,
 	            headerHeight: this.modelManager.dimensionModel.get('headerHeight'),
 	            columnModel: this.modelManager.columnModel,
 	            coordColumnModel: this.modelManager.coordColumnModel,
@@ -13595,6 +13993,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview View class that conaints a top element of the DOM structure of the grid.
 	 * @author NHN Ent. FE Development Lab
 	 */
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -13612,7 +14011,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} options - Options
 	 * @ignore
 	 */
-	var Container = View.extend(/**@lends module:view/container.prototype */{
+	var Container = View.extend(/** @lends module:view/container.prototype */{
 	    initialize: function(options) {
 	        View.prototype.initialize.call(this);
 
@@ -13860,6 +14259,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Class for the content area
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -13887,7 +14287,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} options - Options
 	 * @ignore
 	 */
-	ContentArea = View.extend(/**@lends module:view/layout/content-area.prototype */{
+	ContentArea = View.extend(/** @lends module:view/layout/content-area.prototype */{
 	    initialize: function(options) {
 	        View.prototype.initialize.call(this);
 
@@ -13949,6 +14349,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Class for the pagination
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -13971,7 +14372,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} options - Options
 	 * @ignore
 	 */
-	var Pagination = View.extend(/**@lends module:view/pagination.prototype */{
+	var Pagination = View.extend(/** @lends module:view/pagination.prototype */{
 	    initialize: function(options) {
 	        this.dimensionModel = options.dimensionModel;
 	        this.componentHolder = options.componentHolder;
@@ -13990,6 +14391,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    render: function() {
 	        this._destroyChildren();
 	        this.componentHolder.setInstance('pagination', this._createComponent());
+
 	        return this;
 	    },
 
@@ -14058,6 +14460,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Class for the height resize handle
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var View = __webpack_require__(8);
@@ -14071,7 +14474,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} options - Options
 	 * @ignore
 	 */
-	var HeightResizeHandle = View.extend(/**@lends module:view/layout/heightResizeHandle.prototype */{
+	var HeightResizeHandle = View.extend(/** @lends module:view/layout/heightResizeHandle.prototype */{
 	    initialize: function(options) {
 	        this.dimensionModel = options.dimensionModel;
 	        this.domEventBus = options.domEventBus;
@@ -14117,7 +14520,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @returns {Object} this object
 	     */
 	    render: function() {
-	        this.$el.html('<a href="#"><span></span></a>');
+	        this.$el.html('<button><span></span></button>');
 
 	        return this;
 	    }
@@ -14134,6 +14537,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Drag event emitter
 	 * @author NHN Ent. FE Development Lab
 	 */
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -14146,7 +14550,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @module event/dragEventEmitter
 	 * @ignore
 	 */
-	var DragEventEmitter = snippet.defineClass(/**@lends module:event/dragEventEmitter.prototype */{
+	var DragEventEmitter = snippet.defineClass(/** @lends module:event/dragEventEmitter.prototype */{
 	    init: function(options) {
 	        _.assign(this, {
 	            type: options.type,
@@ -14292,6 +14696,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Layer class that represents the state of rendering phase
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -14309,7 +14714,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} options - Options
 	 * @ignore
 	 */
-	var StateLayer = View.extend(/**@lends module:view/stateLayer.prototype */{
+	var StateLayer = View.extend(/** @lends module:view/stateLayer.prototype */{
 	    initialize: function(options) {
 	        this.dimensionModel = options.dimensionModel;
 	        this.renderModel = options.renderModel;
@@ -14407,6 +14812,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Locale messages
 	 * @author NHN Ent. Fe Development Lab
 	 */
+
 	'use strict';
 
 	var util = __webpack_require__(20);
@@ -14476,6 +14882,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Hidden Textarea View for handling key navigation events and emulating clipboard actions
 	 * @author NHN Ent. FE Development Lab
 	 */
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -14519,7 +14926,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} options - Options
 	 * @ignore
 	 */
-	Clipboard = View.extend(/**@lends module:view/clipboard.prototype */{
+	Clipboard = View.extend(/** @lends module:view/clipboard.prototype */{
 	    initialize: function(options) {
 	        _.assign(this, {
 	            focusModel: options.focusModel,
@@ -14579,6 +14986,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        if (this.isLocked) {
 	            ev.preventDefault();
+
 	            return;
 	        }
 
@@ -14769,6 +15177,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Key event generator
 	 * @author NHN Ent. FE Development Lab
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -14883,6 +15292,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Left Side Frame
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -14898,7 +15308,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @extends module:view/layout/frame
 	 * @ignore
 	 */
-	var LsideFrame = Frame.extend(/**@lends module:view/layout/frame-lside.prototype */{
+	var LsideFrame = Frame.extend(/** @lends module:view/layout/frame-lside.prototype */{
 	    initialize: function() {
 	        Frame.prototype.initialize.apply(this, arguments);
 	        _.assign(this, {
@@ -14955,12 +15365,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Frame Base
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
 
 	var View = __webpack_require__(8);
-	var frameConst = __webpack_require__(14).frame;
+	var constMap = __webpack_require__(14);
+	var frameConst = constMap.frame;
+	var summaryPositionConst = constMap.summaryPosition;
 
 	/**
 	 * Base class for frame view.
@@ -14970,7 +15383,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *      @param {String} [options.whichSide=R] R for Right side, L for Left side
 	 * @ignore
 	 */
-	var Frame = View.extend(/**@lends module:view/layout/frame.prototype */{
+	var Frame = View.extend(/** @lends module:view/layout/frame.prototype */{
 	    initialize: function(options) {
 	        View.prototype.initialize.call(this);
 
@@ -14989,17 +15402,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @returns {module:view/layout/frame} This object
 	     */
 	    render: function() {
-	        var factory = this.viewFactory;
-
 	        this.$el.empty();
 	        this._destroyChildren();
 
 	        this.beforeRender();
-	        this._addChildren([
-	            factory.createHeader(this.whichSide),
-	            factory.createBody(this.whichSide),
-	            factory.createFooter(this.whichSide)
-	        ]);
+
+	        this._addChildren(this._createChildren());
 	        this.$el.append(this._renderChildren());
 	        this.afterRender();
 
@@ -15016,7 +15424,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * To be called at the end of the 'render' method.
 	     * @abstract
 	     */
-	    afterRender: function() {}
+	    afterRender: function() {},
+
+	    /**
+	     * Create children view to append on frame element
+	     * @returns {array} View elements
+	     * @private
+	     */
+	    _createChildren: function() {
+	        var factory = this.viewFactory;
+	        var summaryPosition = this.dimensionModel.get('summaryPosition');
+	        var header = factory.createHeader(this.whichSide);
+	        var body = factory.createBody(this.whichSide);
+	        var summary = factory.createSummary(this.whichSide, summaryPosition);
+	        var children;
+
+	        if (summaryPosition === summaryPositionConst.TOP) {
+	            children = [header, summary, body];
+	        } else if (summaryPosition === summaryPositionConst.BOTTOM) {
+	            children = [header, body, summary];
+	        } else {
+	            children = [header, body];
+	        }
+
+	        return children;
+	    }
 	});
 
 	module.exports = Frame;
@@ -15030,6 +15462,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Right Side Frame
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -15039,6 +15472,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var classNameConst = __webpack_require__(22);
 	var constMap = __webpack_require__(14);
 	var frameConst = constMap.frame;
+	var summaryPositionConst = constMap.summaryPosition;
+
 	var CELL_BORDER_WIDTH = constMap.dimension.CELL_BORDER_WIDTH;
 
 	/**
@@ -15047,7 +15482,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @extends module:view/layout/frame
 	 * @ignore
 	 */
-	var RsideFrame = Frame.extend(/**@lends module:view/layout/frame-rside.prototype */{
+	var RsideFrame = Frame.extend(/** @lends module:view/layout/frame-rside.prototype */{
 	    initialize: function() {
 	        Frame.prototype.initialize.apply(this, arguments);
 
@@ -15122,14 +15557,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    afterRender: function() {
 	        var dimensionModel = this.dimensionModel;
-	        var headerHeight, footerHeight;
+	        var headerHeight, summaryHeight;
 	        var $space, $scrollBorder;
 
 	        if (!dimensionModel.get('scrollY')) {
 	            return;
 	        }
 	        headerHeight = dimensionModel.get('headerHeight');
-	        footerHeight = dimensionModel.get('footerHeight');
+	        summaryHeight = dimensionModel.get('summaryHeight');
 
 	        // Empty DIV for hiding scrollbar in the header area
 	        $space = $('<div />').addClass(classNameConst.SCROLLBAR_HEAD);
@@ -15149,16 +15584,40 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.$el.append($('<div>').addClass(classNameConst.SCROLLBAR_RIGHT_BOTTOM));
 	        }
 
-	        // Empty DIV for filling gray color in the right side of the footer.
-	        if (footerHeight && dimensionModel.get('scrollY')) {
-	            this.$el.append($('<div>')
-	                .addClass(classNameConst.FOOT_AREA_RIGHT)
-	                .css('height', footerHeight - CELL_BORDER_WIDTH)
-	            );
+	        // Empty DIV for filling gray color in the right side of the summary.
+	        if (summaryHeight && dimensionModel.get('scrollY')) {
+	            this._applyStyleToSummary(headerHeight, summaryHeight, dimensionModel.get('summaryPosition'));
 	        }
 
 	        this.$scrollBorder = $scrollBorder;
 	        this._resetScrollBorderHeight();
+	    },
+
+	    /**
+	     * Apply style to summary area on right-side frame
+	     * @param {number} headerHeight - Height of header area
+	     * @param {number} summaryHeight - Height of summary area by setting "summary" option
+	     * @param {string} summaryPosition - Position of summary area ('top' or 'bottom')
+	     */
+	    _applyStyleToSummary: function(headerHeight, summaryHeight, summaryPosition) {
+	        var styles = {};
+	        var subClassName;
+
+	        if (summaryPosition === summaryPositionConst.TOP) {
+	            styles.top = headerHeight;
+	            subClassName = classNameConst.SUMMARY_AREA_RIGHT_TOP;
+	        } else {
+	            styles.bottom = 0;
+	            subClassName = classNameConst.SUMMARY_AREA_RIGHT_BOTTOM;
+	        }
+
+	        styles.height = summaryHeight - CELL_BORDER_WIDTH;
+
+	        this.$el.append($('<div>')
+	            .addClass(classNameConst.SUMMARY_AREA_RIGHT)
+	            .addClass(subClassName)
+	            .css(styles)
+	        );
 	    }
 	});
 
@@ -15173,6 +15632,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Header View
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -15195,6 +15655,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Minimum time (ms) to detect if an alert or confirm dialog has been displayed.
 	var MIN_INTERVAL_FOR_PAUSED = 200;
 
+	var Header;
+
+	/**
+	 * Get count of same columns in complex columns
+	 * @param {array} currentColumn - Current column's model
+	 * @param {array} prevColumn - Previous column's model
+	 * @returns {number} Count of same columns
+	 * @ignore
+	 */
+	function getSameColumnCount(currentColumn, prevColumn) {
+	    var index = 0;
+	    var len = Math.min(currentColumn.length, prevColumn.length);
+
+	    for (; index < len; index += 1) {
+	        if (currentColumn[index].name !== prevColumn[index].name) {
+	            break;
+	        }
+	    }
+
+	    return index;
+	}
+
 	/**
 	 * Header Layout View
 	 * @module view/layout/header
@@ -15203,7 +15685,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {String} [options.whichSide=R]  R: Right, L: Left
 	 * @ignore
 	 */
-	var Header = View.extend(/**@lends module:view/layout/header.prototype */{
+	Header = View.extend(/** @lends module:view/layout/header.prototype */{
 	    initialize: function(options) {
 	        View.prototype.initialize.call(this);
 
@@ -15348,6 +15830,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        return _.filter(mergedColumnNames, function(mergedColumnName) {
 	            var unitColumnNames = columnModel.getUnitColumnNamesIfMerged(mergedColumnName);
+
 	            return _.every(unitColumnNames, function(name) {
 	                return _.contains(columnNames, name);
 	            });
@@ -15537,6 +16020,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @param {boolean} sortOptions.ascending 오름차순 여부
 	     */
 	    _updateBtnSortState: function(sortOptions) {
+	        var className;
+
 	        if (this._$currentSortBtn) {
 	            this._$currentSortBtn.removeClass(classNameConst.BTN_SORT_DOWN + ' ' + classNameConst.BTN_SORT_UP);
 	        }
@@ -15544,9 +16029,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            'th[' + ATTR_COLUMN_NAME + '="' + sortOptions.columnName + '"] a.' + classNameConst.BTN_SORT
 	        );
 
-	        this._$currentSortBtn.addClass(sortOptions.ascending ?
-	            classNameConst.BTN_SORT_UP : classNameConst.BTN_SORT_DOWN
-	        );
+	        className = sortOptions.ascending ? classNameConst.BTN_SORT_UP : classNameConst.BTN_SORT_DOWN;
+
+	        this._$currentSortBtn.addClass(className);
 	    },
 
 	    /**
@@ -15554,6 +16039,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @returns {View.Layout.Header} this
 	     */
 	    render: function() {
+	        var resizeHandleHeights;
+
 	        this._destroyChildren();
 
 	        this.$el.css({
@@ -15564,7 +16051,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }));
 
 	        if (this.coordColumnModel.get('resizable')) {
-	            this._addChildren(this.viewFactory.createHeaderResizeHandle(this.whichSide));
+	            resizeHandleHeights = this._getResizeHandleHeights();
+	            this._addChildren(this.viewFactory.createHeaderResizeHandle(this.whichSide, resizeHandleHeights));
 	            this.$el.append(this._renderChildren());
 	        }
 
@@ -15586,6 +16074,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        };
 	    },
 
+	    /* eslint-disable complexity */
 	    /**
 	     * Header 의 body markup 을 생성한다.
 	     * @returns {string} header 의 테이블 body 영역에 들어갈 html 마크업 스트링
@@ -15652,6 +16141,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        return headerMarkupList.join('');
 	    },
+	    /* eslint-enable complexity */
 
 	    /**
 	     * column merge 가 설정되어 있을 때 헤더의 max row count 를 가져온다.
@@ -15706,7 +16196,33 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }, this);
 	            }
 	        }
+
 	        return results;
+	    },
+
+	    /**
+	     * Get height values of resize handlers
+	     * @returns {array} Height values of resize handles
+	     */
+	    _getResizeHandleHeights: function() {
+	        var hierarchyList = this._getColumnHierarchyList();
+	        var maxRowCount = this._getHierarchyMaxRowCount(hierarchyList);
+	        var rowHeight = util.getRowHeight(maxRowCount, this.headerHeight) - 1;
+	        var handleHeights = [];
+	        var index = 1;
+	        var coulmnLen = hierarchyList.length;
+	        var sameColumnCount, handleHeight;
+
+	        for (; index < coulmnLen; index += 1) {
+	            sameColumnCount = getSameColumnCount(hierarchyList[index], hierarchyList[index - 1]);
+	            handleHeight = rowHeight * (maxRowCount - sameColumnCount);
+
+	            handleHeights.push(handleHeight);
+	        }
+
+	        handleHeights.push(rowHeight * maxRowCount); // last resize handle
+
+	        return handleHeights;
 	    }
 	});
 
@@ -15723,6 +16239,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview ResizeHandle for the Header
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -15746,13 +16263,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} options - Options
 	 * @ignore
 	 */
-	var ResizeHandle = View.extend(/**@lends module:view/layout/resizeHandle.prototype */ {
+	var ResizeHandle = View.extend(/** @lends module:view/layout/resizeHandle.prototype */ {
 	    initialize: function(options) {
 	        _.assign(this, {
 	            columnModel: options.columnModel,
 	            coordColumnModel: options.coordColumnModel,
 	            domEventBus: options.domEventBus,
 	            headerHeight: options.headerHeight,
+	            handleHeights: options.handleHeights,
 	            whichSide: options.whichSide || frameConst.R
 	        });
 
@@ -15782,9 +16300,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        attrNameConst.COLUMN_INDEX + '="<%=columnIndex%>" ' +
 	        attrNameConst.COLUMN_NAME + '="<%=columnName%>" ' +
 	        'class="' + classNameConst.COLUMN_RESIZE_HANDLE + ' <%=lastClass%>" ' +
-	        'height="<%=height%>" ' +
 	        'title="<%=title%>"' +
-	        'style="display:<%=displayType%>">' +
+	        'style="height:<%=height%>;display:<%=displayType%>">' +
 	        '</div>'
 	    ),
 
@@ -15817,7 +16334,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                lastClass: (index + 1 === length) ? classNameConst.COLUMN_RESIZE_HANDLE_LAST : '',
 	                columnIndex: index,
 	                columnName: columnModel.name,
-	                height: this.headerHeight,
+	                height: this.handleHeights[index] + 'px',
 	                title: message.get('resizeHandleGuide'),
 	                displayType: (columnModel.resizable === false) ? 'none' : 'block'
 	            });
@@ -15859,7 +16376,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var $handler = $resizeHandleList.eq(index);
 	            curPos += columnWidths[index] + CELL_BORDER_WIDTH;
 	            $handler.css('left', curPos - handlerWidthHalf);
-	        });
+	        }, this);
 	    },
 
 	    /**
@@ -15930,6 +16447,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Class for the body layout
 	 * @author NHN Ent. FE Development Lab
 	 */
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -15956,7 +16474,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {String} [options.whichSide=R] L or R (which side)
 	 * @ignore
 	 */
-	var Body = View.extend(/**@lends module:view/layout/body.prototype */{
+	var Body = View.extend(/** @lends module:view/layout/body.prototype */{
 	    initialize: function(options) {
 	        View.prototype.initialize.call(this);
 
@@ -15968,7 +16486,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            // DIV for setting rendering position of entire child-nodes of $el.
 	            $container: null,
-	            whichSide: options && options.whichSide || frameConst.R
+	            whichSide: (options && options.whichSide) || frameConst.R
 	        });
 
 	        this.listenTo(this.dimensionModel, 'change:bodyHeight', this._onBodyHeightChange)
@@ -16102,6 +16620,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                result = (endTime - startTime) <= MIN_INTERVAL_FOR_PAUSED;
 	            }
 	        }
+
 	        return result;
 	    },
 
@@ -16193,6 +16712,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Class for the table layout in the body(data) area
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -16212,7 +16732,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {String} [options.whichSide='R'] L or R (which side)
 	 * @ignore
 	 */
-	var BodyTable = View.extend(/**@lends module:view/layout/bodyTable.prototype */{
+	var BodyTable = View.extend(/** @lends module:view/layout/bodyTable.prototype */{
 	    initialize: function(options) {
 	        View.prototype.initialize.call(this);
 
@@ -16326,6 +16846,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // To prevent issue of appearing vertical scrollbar when dummy rows exists
 	        this._resetHeight();
 	        this._resetOverflow();
+
 	        return this;
 	    },
 
@@ -16387,9 +16908,10 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ (function(module, exports, __webpack_require__) {
 
 	/**
-	 * @fileoverview Footer
+	 * @fileoverview Summary
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -16401,13 +16923,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	var ATTR_COLUMN_NAME = constMap.attrName.COLUMN_NAME;
 
 	/**
-	 * Footer area
-	 * @module view/layout/footer
+	 * Summary area
+	 * @module view/layout/summary
 	 * @extends module:base/view
 	 * @param {Object} options - Options
 	 * @ignore
 	 */
-	var Footer = View.extend(/**@lends module:view/layout/footer.prototype */{
+	var Summary = View.extend(/** @lends module:view/layout/summary.prototype */{
 	    initialize: function(options) {
 	        /**
 	         * Store template functions of each column
@@ -16438,13 +16960,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // events
 	        this.listenTo(this.renderModel, 'change:scrollLeft', this._onChangeScrollLeft);
 	        this.listenTo(this.coordColumnModel, 'columnWidthChanged', this._onChangeColumnWidth);
-	        this.listenTo(this.columnModel, 'setFooterContent', this._setColumnContent);
+	        this.listenTo(this.columnModel, 'setSummaryContent', this._setColumnContent);
 	        if (this.summaryModel) {
 	            this.listenTo(this.summaryModel, 'change', this._onChangeSummaryValue);
 	        }
 	    },
 
-	    className: classNameConst.FOOT_AREA,
+	    className: classNameConst.SUMMARY_AREA,
 
 	    events: {
 	        scroll: '_onScrollView'
@@ -16578,12 +17100,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @returns {object}
 	     */
 	    render: function() {
-	        var footerHeight = this.dimensionModel.get('footerHeight');
+	        var summaryHeight = this.dimensionModel.get('summaryHeight');
+	        var summaryPosition = this.dimensionModel.get('summaryPosition');
+	        var className = summaryPosition === 'top' ? classNameConst.SUMMARY_AREA_TOP : classNameConst.SUMMARY_AREA_BOTTOM;
 
-	        if (footerHeight) {
+	        this.$el.addClass(className);
+
+	        if (summaryHeight) {
 	            this.$el.html(this.template({
 	                className: classNameConst.TABLE,
-	                height: footerHeight,
+	                height: summaryHeight,
 	                tbody: this._generateTbodyHTML()
 	            }));
 	        }
@@ -16592,7 +17118,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	});
 
-	module.exports = Footer;
+	module.exports = Summary;
 
 
 /***/ }),
@@ -16603,6 +17129,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview RowList View
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -16625,7 +17152,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {string} [options.whichSide='R']   어느 영역에 속하는 rowList 인지 여부. 'L|R' 중 하나를 지정한다.
 	 * @ignore
 	 */
-	var RowList = View.extend(/**@lends module:view/rowList.prototype */{
+	var RowList = View.extend(/** @lends module:view/rowList.prototype */{
 	    initialize: function(options) {
 	        var focusModel = options.focusModel;
 	        var renderModel = options.renderModel;
@@ -16778,6 +17305,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (!startIndex && !endIndex) {
 	            return $();
 	        }
+
 	        return $rows.slice(startIndex, endIndex);
 	    },
 
@@ -16795,6 +17323,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (renderStartIndex > rowIndex) {
 	            return $();
 	        }
+
 	        return $rows.eq(rowIndex - renderStartIndex);
 	    },
 
@@ -16912,6 +17441,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Class for the selection layer
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -16928,7 +17458,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {object} options Options
 	 * @ignore
 	 */
-	var SelectionLayer = View.extend(/**@lends module:view/selectionLayer.prototype */{
+	var SelectionLayer = View.extend(/** @lends module:view/selectionLayer.prototype */{
 	    initialize: function(options) {
 	        _.assign(this, {
 	            whichSide: options.whichSide || frameConst.R,
@@ -17079,6 +17609,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Layer class that represents the state of rendering phase
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -17096,7 +17627,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} options - Options
 	 * @ignore
 	 */
-	var EditingLayer = View.extend(/**@lends module:view/editingLayer.prototype */{
+	var EditingLayer = View.extend(/** @lends module:view/editingLayer.prototype */{
 	    initialize: function(options) {
 	        this.renderModel = options.renderModel;
 	        this.domState = options.domState;
@@ -17243,6 +17774,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Layer View class which contains the 'tui-date-picker'
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -17262,7 +17794,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} options - Options
 	 * @ignore
 	 */
-	DatePickerLayer = View.extend(/**@lends module:view/datePickerLayer.prototype */{
+	DatePickerLayer = View.extend(/** @lends module:view/datePickerLayer.prototype */{
 	    initialize: function(options) {
 	        this.focusModel = options.focusModel;
 	        this.textPainter = options.textPainter;
@@ -17439,6 +17971,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    render: function() {
 	        this.$el.hide();
+
 	        return this;
 	    }
 	});
@@ -17454,6 +17987,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Class for the layer view that represents the currently focused cell
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -17475,7 +18009,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} options - Options
 	 * @ignore
 	 */
-	var FocusLayer = View.extend(/**@lends module:view/focusLayer.prototype */{
+	var FocusLayer = View.extend(/** @lends module:view/focusLayer.prototype */{
 	    initialize: function(options) {
 	        this.focusModel = options.focusModel;
 	        this.columnModel = options.columnModel;
@@ -17495,6 +18029,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.listenTo(this.coordRowModel, 'reset', this._refreshCurrentLayout);
 	        this.listenTo(this.focusModel, 'blur', this._onBlur);
 	        this.listenTo(this.focusModel, 'focus', this._onFocus);
+	        this.listenTo(this.focusModel, 'change:active', this._onChangeActiveState);
 	    },
 
 	    className: classNameConst.LAYER_FOCUS,
@@ -17516,11 +18051,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @private
 	     */
 	    _onBlur: function() {
-	        if (this.focusModel.has(true)) {
-	            this.$el.addClass(BLUR_CLASS_NAME);
-	        } else {
-	            this.$el.hide();
-	        }
+	        this.$el.hide();
 	    },
 
 	    /**
@@ -17532,13 +18063,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	    _onFocus: function(rowKey, columnName) {
 	        var targetSide = this.columnModel.isLside(columnName) ? frameConst.L : frameConst.R;
 
-	        if (this.focusModel.has(true)) {
-	            this.$el.removeClass(BLUR_CLASS_NAME);
-	        }
-
 	        if (targetSide === this.whichSide) {
 	            this._refreshBorderLayout(rowKey, columnName);
 	            this.$el.show();
+	        }
+	    },
+
+	    /**
+	     * Event handler for 'change:active' event on module:model/focus
+	     * @param {object} model - Focus model
+	     * @private
+	     */
+	    _onChangeActiveState: function(model) {
+	        if (!model.changed.active) {
+	            this.$el.addClass(BLUR_CLASS_NAME);
+	        } else {
+	            this.$el.removeClass(BLUR_CLASS_NAME);
 	        }
 	    },
 
@@ -17605,6 +18145,12 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
+	
+	/**
+	 * @fileoverview Creator of domEventBus
+	 * @author NHN Ent. FE Development Lab
+	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -17625,6 +18171,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview This class offers methods that can be used to get the current state of DOM element.
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -17639,7 +18186,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {jQuery} $el - jQuery object of the container element.
 	 * @ignore
 	 */
-	var DomState = snippet.defineClass(/**@lends module:domState.prototype */{
+	var DomState = snippet.defineClass(/** @lends module:domState.prototype */{
 	    init: function($el) {
 	        this.$el = $el;
 	    },
@@ -17744,6 +18291,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Public Event Emitter
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -17758,7 +18306,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *            This object should have methods of Backbone.Events.
 	 * @ignore
 	 */
-	var PublicEventEmitter = snippet.defineClass(/**@lends module:publicEventEmitter.prototype */{
+	var PublicEventEmitter = snippet.defineClass(/** @lends module:publicEventEmitter.prototype */{
 	    init: function(publicObject) {
 	        this.publicObject = publicObject;
 	    },
@@ -17852,6 +18400,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Painter Manager
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -17871,7 +18420,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} options - Options
 	 * @ignore
 	 */
-	var PainterManager = snippet.defineClass(/**@lends module:painter/manager.prototype */{
+	var PainterManager = snippet.defineClass(/** @lends module:painter/manager.prototype */{
 	    init: function(options) {
 	        this.gridId = options.gridId;
 	        this.selectType = options.selectType;
@@ -18013,6 +18562,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Painter class for the row(TR) views
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -18020,6 +18570,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var Painter = __webpack_require__(65);
 	var constMap = __webpack_require__(14);
+	var classNameConst = __webpack_require__(22);
 	var attrNameConst = constMap.attrName;
 	var CELL_BORDER_WIDTH = constMap.dimension.CELL_BORDER_WIDTH;
 
@@ -18030,7 +18581,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {object} options - Options
 	 * @ignore
 	 */
-	var RowPainter = snippet.defineClass(Painter, /**@lends module:painter/row.prototype */{
+	var RowPainter = snippet.defineClass(Painter, /** @lends module:painter/row.prototype */{
 	    init: function(options) {
 	        Painter.apply(this, arguments);
 	        this.painterManager = options.painterManager;
@@ -18120,7 +18671,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    generateHtml: function(model, columnNames) {
 	        var rowKey = model.get('rowKey');
 	        var rowNum = model.get('rowNum');
-	        var className = '';
+	        var className = (rowNum % 2) ? classNameConst.ROW_ODD : classNameConst.ROW_EVEN;
 	        var rowKeyAttr = '';
 	        var html;
 
@@ -18169,6 +18720,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Base class for Painters
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -18185,7 +18737,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} options - options
 	 * @ignore
 	 */
-	var Painter = snippet.defineClass(/**@lends module:base/painter.prototype */{
+	var Painter = snippet.defineClass(/** @lends module:base/painter.prototype */{
 	    init: function(options) {
 	        this.controller = options.controller;
 	    },
@@ -18251,6 +18803,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Painter class for cell(TD) views
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -18268,7 +18821,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} options - options
 	 * @ignore
 	 */
-	var Cell = snippet.defineClass(Painter, /**@lends module:painter/cell.prototype */{
+	var Cell = snippet.defineClass(Painter, /** @lends module:painter/cell.prototype */{
 	    init: function(options) {
 	        Painter.apply(this, arguments);
 
@@ -18407,8 +18960,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    _getAttributes: function(cellData) {
 	        var classNames = [
 	            cellData.className,
-	            classNameConst.CELL,
-	            (cellData.rowNum % 2) ? classNameConst.CELL_ROW_ODD : classNameConst.CELL_ROW_EVEN
+	            classNameConst.CELL
 	        ];
 	        var attrs = {
 	            'align': cellData.columnModel.align || 'left'
@@ -18479,7 +19031,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (editingChangedToTrue && !this._isUsingViewMode(cellData)) {
 	            this.inputPainter.focus($td);
 	        } else if (mainButton) {
-	            $td.find(this.inputPainter.selector).prop('checked', cellData.value);
+	            $td.find(this.inputPainter.selector).prop({
+	                checked: cellData.value,
+	                disabled: cellData.disabled
+	            });
 	        } else if (shouldUpdateContent) {
 	            $td.html(this._getContentHtml(cellData));
 	            $td.scrollLeft(0);
@@ -18498,6 +19053,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Dummy cell painter
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -18514,7 +19070,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @extends module:base/painter
 	 * @ignore
 	 */
-	var DummyCell = snippet.defineClass(Painter, /**@lends module:painter/dummyCell.prototype */{
+	var DummyCell = snippet.defineClass(Painter, /** @lends module:painter/dummyCell.prototype */{
 	    init: function() {
 	        Painter.apply(this, arguments);
 	    },
@@ -18547,8 +19103,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    generateHtml: function(rowNum, columnName) {
 	        var classNames = [
 	            classNameConst.CELL,
-	            classNameConst.CELL_DUMMY,
-	            (rowNum % 2) ? classNameConst.CELL_ROW_ODD : classNameConst.CELL_ROW_EVEN
+	            classNameConst.CELL_DUMMY
 	        ];
 
 	        if (util.isMetaColumn(columnName)) {
@@ -18573,6 +19128,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Painter class for the 'input[type=text]' and 'input[type=password]'.
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -18592,7 +19148,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} options - options
 	 * @ignore
 	 */
-	var TextPainter = snippet.defineClass(InputPainter, /**@lends module:painter/input/text.prototype */{
+	var TextPainter = snippet.defineClass(InputPainter, /** @lends module:painter/input/text.prototype */{
 	    init: function(options) {
 	        InputPainter.apply(this, arguments);
 
@@ -18696,6 +19252,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (cellData.whiteSpace !== 'nowrap') {
 	            return this.templateTextArea(params);
 	        }
+
 	        return this.templateInput(params);
 	    },
 
@@ -18724,6 +19281,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Base class for the Input Painter
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -18741,7 +19299,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} options - options
 	 * @ignore
 	 */
-	var InputPainter = snippet.defineClass(Painter, /**@lends module:painter/input/base.prototype */{
+	var InputPainter = snippet.defineClass(Painter, /** @lends module:painter/input/base.prototype */{
 	    init: function() {
 	        Painter.apply(this, arguments);
 
@@ -18965,6 +19523,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Painter class for 'select' input.
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -18980,7 +19539,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @extends module:painter/input/base
 	 * @ignore
 	 */
-	var SelectPainter = snippet.defineClass(InputPainter, /**@lends module:painter/input/select.prototype */{
+	var SelectPainter = snippet.defineClass(InputPainter, /** @lends module:painter/input/select.prototype */{
 	    init: function() {
 	        InputPainter.apply(this, arguments);
 
@@ -19068,6 +19627,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Painter class for 'checkbox' and 'radio button'.
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -19084,7 +19644,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} options - options
 	 * @ignore
 	 */
-	var ButtonPainter = snippet.defineClass(InputPainter, /**@lends module:painter/input/button.prototype */{
+	var ButtonPainter = snippet.defineClass(InputPainter, /** @lends module:painter/input/button.prototype */{
 	    init: function(options) {
 	        InputPainter.apply(this, arguments);
 
@@ -19210,8 +19770,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        if ($nextInputs.length) {
 	            $nextInputs.first().focus();
+
 	            return true;
 	        }
+
 	        return false;
 	    },
 
@@ -19342,6 +19904,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Main Button Painter
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -19362,7 +19925,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} options - options
 	 * @ignore
 	 */
-	var InputPainter = snippet.defineClass(Painter, /**@lends module:painter/input/mainButton.prototype */{
+	var InputPainter = snippet.defineClass(Painter, /** @lends module:painter/input/mainButton.prototype */{
 	    init: function(options) {
 	        Painter.apply(this, arguments);
 
@@ -19389,7 +19952,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        'type="<%=type%>" name="<%=name%>" <%=checked%> <%=disabled%> />'
 	    ),
 
-	     /**
+	    /**
 	     * Event handler for 'change' DOM event.
 	     * @param {Event} event - DOM event object
 	     * @private
@@ -19457,6 +20020,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Controller class to handle actions from the painters
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -19471,7 +20035,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} options - options
 	 * @ignore
 	 */
-	var PainterController = snippet.defineClass(/**@lends module:painter/controller.prototype */{
+	var PainterController = snippet.defineClass(/** @lends module:painter/controller.prototype */{
 	    init: function(options) {
 	        this.focusModel = options.focusModel;
 	        this.dataModel = options.dataModel;
@@ -19515,6 +20079,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (maxLength > 0 && value.length > maxLength) {
 	            return value.substring(0, maxLength);
 	        }
+
 	        return value;
 	    },
 
@@ -19612,8 +20177,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (columnModel.dataType === 'number') {
 	            value = convertToNumber(value);
 	        }
-
-	        this.dataModel.setValue(address.rowKey, address.columnName, value);
+	        if (columnModel.name === '_button') {
+	            if (value) {
+	                this.dataModel.check(address.rowKey);
+	            } else {
+	                this.dataModel.uncheck(address.rowKey);
+	            }
+	        } else {
+	            this.dataModel.setValue(address.rowKey, address.columnName, value);
+	        }
 	    },
 
 	    /**
@@ -19644,6 +20216,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (_.isNumber(value) || isNaN(value) || util.isBlank(value)) {
 	        return value;
 	    }
+
 	    return Number(value);
 	}
 
@@ -19676,6 +20249,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Add-on for binding to remote data
 	 * @author NHN Ent. FE Development Lab
 	 */
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -19765,7 +20339,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *      net.request('modifyData');
 	 *   </script>
 	 */
-	var Net = View.extend(/**@lends module:addon/net.prototype */{
+	var Net = View.extend(/** @lends module:addon/net.prototype */{
 	    initialize: function(options) {
 	        var defaultOptions = {
 	            initialRequest: true,
@@ -20060,12 +20634,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            this.requestedFormData = _.clone(data);
 	            this.curPage = data.page || this.curPage;
-	            startNumber = (this.curPage - 1) * this.perPage + 1;
+	            startNumber = ((this.curPage - 1) * this.perPage) + 1;
 	            this.renderModel.set({
 	                startNumber: startNumber
 	            });
 
-	            //마지막 요청한 reloadData에서 사용하기 위해 data 를 저장함.
+	            // 마지막 요청한 reloadData에서 사용하기 위해 data 를 저장함.
 	            this.lastRequestedReadData = _.clone(data);
 	            this.dataModel.fetch({
 	                requestType: 'readData',
@@ -20236,7 +20810,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        if (options.hasDataParam) {
 	            if (options.modifiedOnly) {
-	                //{createdRows: [], updatedRows:[], deletedRows: []} 에 담는다.
+	                // {createdRows: [], updatedRows:[], deletedRows: []} 에 담는다.
 	                dataMap = dataModel.getModifiedRows({
 	                    checkedOnly: options.checkedOnly
 	                });
@@ -20247,7 +20821,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    }
 	                }, this);
 	            } else {
-	                //{rows: []} 에 담는다.
+	                // {rows: []} 에 담는다.
 	                data.rows = dataModel.getRows(options.checkedOnly);
 	                count = data.rows.length;
 	            }
@@ -20381,6 +20955,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this._unlock();
 	    },
 
+	    /* eslint-disable complexity */
 	    /**
 	     * ajax success 이벤트 핸들러
 	     * @param {Function} callback Callback function
@@ -20451,6 +21026,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        }
 	    },
+	    /* eslint-enable complexity */
 
 	    /**
 	     * ajax error 이벤트 핸들러
@@ -20506,6 +21082,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Router for Addon.Net
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var Backbone = __webpack_require__(9);
@@ -20516,7 +21093,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param  {object} attributes - Attributes
 	 * @ignore
 	 */
-	var Router = Backbone.Router.extend(/**@lends module:addon/net-router.prototype */{
+	var Router = Backbone.Router.extend(/** @lends module:addon/net-router.prototype */{
 	    initialize: function(attributes) {
 	        this.net = attributes.net;
 	    },
@@ -20537,6 +21114,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Utilities for form data, form element
 	 * @author NHN Ent. Fe Development Team
 	 */
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -20768,6 +21346,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @fileoverview Component holder
 	 * @author NHN Ent. FE Development Team
 	 */
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -20782,7 +21361,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @module componentHolder
 	 * @ignore
 	 */
-	var ComponentHolder = snippet.defineClass(/**@lends module:componentHolder.prototype */{
+	var ComponentHolder = snippet.defineClass(/** @lends module:componentHolder.prototype */{
 	    init: function(optionsMap) {
 	        this.optionsMap = $.extend(true, defaultOptionsMap, optionsMap);
 	        this.instanceMap = {};
@@ -20827,6 +21406,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	* @fileoverview theme manager
 	* @author NHN Ent. FE Development Team
 	*/
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -20925,6 +21505,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	* @fileoverview css style generator
 	* @author NHN Ent. FE Development Team
 	*/
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -20979,22 +21560,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var contentAreaRule = classRule(classNameConst.CONTENT_AREA).border(options.border);
 	        var tableRule = classRule(classNameConst.TABLE).border(options.border);
 	        var headerRule = classRule(classNameConst.HEAD_AREA).border(options.border);
-	        var footerRule = classRule(classNameConst.FOOT_AREA).border(options.border);
+	        var summaryRule = classRule(classNameConst.SUMMARY_AREA).border(options.border);
 	        var borderLineRule = classRule(classNameConst.BORDER_LINE).bg(options.border);
 	        var scrollHeadRule = classRule(classNameConst.SCROLLBAR_HEAD).border(options.border);
 	        var scrollBorderRule = classRule(classNameConst.SCROLLBAR_BORDER).bg(options.border);
-	        var footerRightRule = classRule(classNameConst.FOOT_AREA_RIGHT).border(options.border);
+	        var summaryRightRule = classRule(classNameConst.SUMMARY_AREA_RIGHT).border(options.border);
 
 	        return builder.buildAll([
 	            containerRule,
 	            contentAreaRule,
 	            tableRule,
 	            headerRule,
-	            footerRule,
+	            summaryRule,
 	            borderLineRule,
 	            scrollHeadRule,
 	            scrollBorderRule,
-	            footerRightRule
+	            summaryRightRule
 	        ]);
 	    },
 
@@ -21009,7 +21590,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var rightBottomRule = classRule(classNameConst.SCROLLBAR_RIGHT_BOTTOM).bg(options.background);
 	        var leftBottomRule = classRule(classNameConst.SCROLLBAR_LEFT_BOTTOM).bg(options.background);
 	        var scrollHeadRule = classRule(classNameConst.SCROLLBAR_HEAD).bg(options.background);
-	        var footerRightRule = classRule(classNameConst.FOOT_AREA_RIGHT).bg(options.background);
+	        var summaryRightRule = classRule(classNameConst.SUMMARY_AREA_RIGHT).bg(options.background);
 	        var bodyAreaRule = classRule(classNameConst.BODY_AREA).bg(options.background);
 
 	        return builder.buildAll(webkitScrollbarRules.concat([
@@ -21017,7 +21598,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            rightBottomRule,
 	            leftBottomRule,
 	            scrollHeadRule,
-	            footerRightRule,
+	            summaryRightRule,
 	            bodyAreaRule
 	        ]));
 	    },
@@ -21079,10 +21660,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var headAreaRule = classRule(classNameConst.HEAD_AREA)
 	            .bg(options.background);
 
-	        var footerAreaRule = classRule(classNameConst.FOOT_AREA)
+	        var summaryAreaRule = classRule(classNameConst.SUMMARY_AREA)
 	            .bg(options.background);
 
-	        return builder.buildAll([headRule, headAreaRule, footerAreaRule]);
+	        return builder.buildAll([headRule, headAreaRule, summaryAreaRule]);
 	    },
 
 	    /**
@@ -21091,7 +21672,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @returns {String}
 	     */
 	    cellEvenRow: function(options) {
-	        return classRule(classNameConst.CELL_ROW_EVEN)
+	        return classRule(classNameConst.ROW_EVEN + '>td')
 	            .bg(options.background)
 	            .build();
 	    },
@@ -21102,7 +21683,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @returns {String}
 	     */
 	    cellOddRow: function(options) {
-	        return classRule(classNameConst.CELL_ROW_ODD)
+	        return classRule(classNameConst.ROW_ODD + '>td')
 	            .bg(options.background)
 	            .build();
 	    },
@@ -21206,6 +21787,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	* @fileoverview CSS Rule string builder
 	* @author NHN Ent. FE Development Team
 	*/
+
 	'use strict';
 
 	var _ = __webpack_require__(6);
@@ -21238,6 +21820,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (value) {
 	            this._propValues.push(property + ':' + value);
 	        }
+
 	        return this;
 	    },
 
@@ -21272,6 +21855,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.add('border-top-width', value)
 	                .add('border-bottom-width', value);
 	        }
+
 	        return this;
 	    },
 
@@ -21392,6 +21976,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	* @fileoverview default theme preset
 	* @author NHN Ent. FE Development Team
 	*/
+
 	'use strict';
 
 	module.exports = {
@@ -21469,6 +22054,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	* @fileoverview default theme preset
 	* @author NHN Ent. FE Development Team
 	*/
+
 	'use strict';
 
 	var $ = __webpack_require__(10);
@@ -21506,6 +22092,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	* @fileoverview default theme preset
 	* @author NHN Ent. FE Development Team
 	*/
+
 	'use strict';
 
 	var $ = __webpack_require__(10);

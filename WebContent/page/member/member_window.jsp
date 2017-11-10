@@ -7,12 +7,12 @@
 		<table id="memberTable" class="width100">
 			<tr>
 				<td class="thB" style="width:25%;">이름</td>
-				<td><input type="text" class="input width100" name="name"/></td>
+				<td><input type="text" class="text-input width100" name="name"/></td>
 			</tr>
 			<tr>
 				<td class="thB">파트</td>
 				<td>
-					<select  class="input width100" name="part">
+					<select  class="dropdown-menu width100" name="part">
 						<option value="s">소프라노</option>
 						<option value="a">알토</option>
 						<option value="t">테너</option>
@@ -25,20 +25,20 @@
 			</tr>
 			<tr>
 				<td class="thB">폰 번호</td>
-				<td><input type="text"  class="input width100" name="phone" placeholder="01011112222" maxlength="13"/></td>
+				<td><input type="text"  class="text-input width100" name="phone" placeholder="01011112222" maxlength="13"/></td>
 			</tr>
 			<tr>
 				<td class="thB">생일</td>
-				<td><input type="date" class="input width100" name="birthday" /></td>
+				<td><input type="date" class="text-input" style="width:95%;" name="birthday" /></td>
 			</tr>
 			<tr>
 				<td class="thB">E-mail</td>
-				<td><input type="text" class="input width100" name="email" placeholder="aaa@naver.com" /></td>				
+				<td><input type="text" class="text-input width100" name="email" placeholder="aaa@naver.com" /></td>				
 			</tr>
 			<tr>
 				<td class="thB">상태</td>
 				<td>
-					<select name="status" class="input width100">
+					<select name="status" class="dropdown-menu width100">
 						<option value="Y">활동중</option>
 						<option value="R">장기결석</option>
 						<option value="N">기타(탈퇴)</option>
@@ -46,21 +46,21 @@
 				</td>
 			</tr>
 			<tr>
-				<td class="thB">성가대 등록일</td>
-				<td><input type="date" class="input width100" name="regi_date"/></td>				
+				<td class="thB">성가대<br>등록일</td>
+				<td><input type="date" class="text-input" style="width:95%;" name="regi_date"/></td>				
 			</tr>
 			<tr>
 				<td class="thB">비고</td>
 				<td>
-					<textarea rows="5" style="width:100%;"  class="input" name="comment"></textarea>
+					<textarea rows="5" class="text-input width100" name="comment"></textarea>
 				</td>
 			</tr>
 		</table>
 	</div>
 	<div class="foot hide">
-		<button type="button" id="save" class="btn btn-primary">저장</button>
-		<button type="button" id="close" class="btn btn-default">닫기</button>
-		<!-- <button type="button" id="delete" class="btn btn-default">삭제</button> -->
+		<button id="save" class="button raised bg-blue-500 color-white">저장</button>
+        <button id="close" class="button raised">닫기</button>
+        <!-- <button id="delete" class="button raised">삭제</button> -->
 	</div>
 </div>
 
@@ -142,7 +142,8 @@ $(document).ready(function(){
 				}else if(rtnValue.type === "update"){
 					text = "수정";
 				}
-				reloadTab(datas.part);
+				//reloadTab(datas.part);
+				userFns.setTab(datas.part);
 				msg.alert(text+" 되었습니다.");
 				Footer.find("#close").click();
 			}

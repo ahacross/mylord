@@ -34,15 +34,17 @@ canvas {
 		</tr>
 		<tr>
 			<td style="text-align: center;vertical-align: middle">
-				2017년 출석률(전)
+				<span id="yearB">2017</span>년 출석률(전)
 				<div id="beforeThisyear"></div>
 			</td>
 			<td style="text-align: center;vertical-align: middle">
-				2017년 출석률(후)
+				<span id="yearA">2017</span>년 출석률(후)
 				<div id="afterThisyear"></div>
 			</td>
 		</tr>
 	</table>
+	연습 -> 왼쪽 상단 메뉴에서 "했던 곡들" -> 오른쪽 끝에 연습 누르면 페이지 이동함.<br/>
+	기타 정보들 메뉴에 주를 경배하라, 8성부 아멘 올려놨습니다~ (반주자님 ㄳㄳ)
 </div>
 <script>
 

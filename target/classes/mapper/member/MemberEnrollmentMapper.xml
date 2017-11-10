@@ -1,7 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="me.ahacross.mylord.enrollment.MemberEnrollmentMapper">	
+<mapper namespace="me.ahacross.mylord.enrollment.MemberEnrollmentMapper">
+	<select id="getOne" resultType="hashmap" parameterType="me.ahacross.mylord.enrollment.MemberEnrollment">
+		select 
+			* 
+		from 
+			member_enrollment
+		<trim prefix="where" prefixOverrides="AND" >
+			<if test='attend_date != null'>
+				attend_date = #{attend_date}
+			</if>
+			<if test='part != null'>
+	    		and part = #{part}
+	    	</if>
+		</trim>
+	</select>
 	<insert id="insert" parameterType="me.ahacross.mylord.enrollment.MemberEnrollment" >
 		insert into member_enrollment (attend_date, part, before_count, after_count)
 			values (#{attend_date}, #{part}, #{before_count}, #{after_count})

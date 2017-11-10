@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="me.ahacross.mylord.dues.MemberDuesMapper">
+	<select id="getList" resultType="hashmap" parameterType="me.ahacross.mylord.dues.MemberDues">	
+		select 
+			d.member_id,
+			name,
+			year,
+			dues_cnt,
+			status 
+		from 
+			member_dues d
+		join (select * from member where part = '${part}') m
+		on  d.member_id = m.member_id
+		<trim prefix="where" prefixOverrides="AND" >
+			<if test='year != null'>
+	    		year = #{year}
+	    	</if>	    	
+	    </trim>
+		order by
+			name
+	</select>
+	
+	<select id="getOne" resultType="hashmap" parameterType="me.ahacross.mylord.dues.MemberDues">
+		select 
+			* 
+		from 
+			member_dues
+		<trim prefix="where" prefixOverrides="AND" >
+			<if test='member_id != null'>
+				member_id = #{member_id}
+			</if>
+			<if test='year != null'>
+	    		AND year = #{year}
+	    	</if>
+		</trim>
+	</select>
+	
+	<insert id="insert" parameterType="me.ahacross.mylord.enrollment.MemberEnrollment" >
+		insert into member_dues (member_id, year, dues_cnt)
+			values (#{member_id}, #{year}, #{dues_cnt})
+		 ON DUPLICATE KEY UPDATE 
+		 <trim suffixOverrides="," >
+			<if test='dues_cnt != null'>
+	    		dues_cnt = #{dues_cnt},
+	    	</if>	    	
+		</trim>
+	</insert>
+	
+	<delete id="delete" parameterType="me.ahacross.mylord.dues.MemberDues">
+		delete from 
+			member_dues 
+		where member_id = #{member_id} and year = #{year}
+	</delete>	
+</mapper>

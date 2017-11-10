@@ -1,78 +1,66 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <div class="panel">
 	<div class="body">
-		<div  id="btnsArea">
-			<a class="btn" id="addMember">대원추가</a>&nbsp;&nbsp;&nbsp;
-			<a class="btn" id="partList">파트별 대원관리</a>&nbsp;&nbsp;&nbsp;
-			<a class="btn" id="partCheck_attendance">파트별 출석</a>&nbsp;&nbsp;&nbsp;
-			<a class="btn" id="birthdayBtn">생일 월별</a>&nbsp;&nbsp;&nbsp;
-			<a class="btn" id="duesBtn">회비 현황</a>&nbsp;&nbsp;&nbsp;
-			<a class="btn" id="statsBtn">출석 통계</a>&nbsp;&nbsp;&nbsp;
+		<div style="display: flex;">
+			<div style="flex: 1;">
+				관리 메뉴 : 
+				<select name="manageMembers" class="dropdown-menu">
+					<option value="partList">대원관리</option>
+					<option value="attendance">출석관리</option>
+					<option value="birthday">월별 생일</option>
+					<option value="dues">회비 관리</option>
+				</select>
+			</div>
+			<div style="width:55px;">
+				<button id="addMember" class="button raised bg-blue-500 color-white" title="대원추가" style="padding: 4px 0 4px 15px;"><i class="fa fa-user-plus" aria-hidden="true"></i></button>
+			</div>
 		</div>
 		<div id="spaceArea" style="margin-top: 10px;"></div>
-		
 	</div>
 </div>
 <script>
-	var filepath = "page/member/";
-	userVars.memberWindow = loadWindow(filepath + "member_window.jsp");
-	
+(function() {
+	if(cookie.get("mylordAuth").indexOf("파트장") > -1){
+		$("[name=manageMembers]").parent().empty();
+	}
+	userWindows.memberWindow = loadWindow("page/member/member_window.jsp");
 	$("#addMember").on("click", function(){
-		userVars.memberWindow.init({type:"add"});
-		windowDialog.show(userVars.memberWindow, 400, 430);
+		userWindows.memberWindow.init({type:"add"});
+		windowDialog.show(userWindows.memberWindow, 400, 430);
 	});
 	
-	$("#partList").on("click", function(){
-		$("#spaceArea")
-			.empty()
-			.load(filepath+"memberList.jsp");
+	var getMenuPath = function(selectedMenu){
+		var tabMenuMap = {};
+		tabMenuMap.partList = "memberList.jsp";
+		tabMenuMap.attendance = "attendance.jsp";
+		tabMenuMap.birthday = "birthday.jsp";
+		tabMenuMap.dues = "dues.jsp";
+		
+		return "page/member/" + tabMenuMap[selectedMenu];
+	}
+	
+	var changeTabMenu = function(selectedMenu){
+		$("#spaceArea").empty().load(getMenuPath(selectedMenu));
 		
 		userVars.showMenu = $(this).attr("id");
 		focusChange($(this));
-	});
-	
-	$("#partCheck_attendance").on("click", function(){
-		$("#spaceArea")
-			.empty()
-			.load(filepath+"attendance.jsp");
-		
-		userVars.showMenu = $(this).attr("id");
-		focusChange($(this));
-	});
-	
-	$("#birthdayBtn").on("click", function(){
-		$("#spaceArea")
-			.empty()
-			.load(filepath+"birthday.jsp");
-		
-		userVars.showMenu = $(this).attr("id");
-		focusChange($(this));
-	});
-		
-	$("#duesBtn").on("click", function(){
-		$("#spaceArea")
-			.empty()
-			.load(filepath+"dues.jsp");
-		
-		userVars.showMenu = $(this).attr("id");
-		focusChange($(this));
-	});
-	
-	$("#statsBtn").on("click", function(){
-		$("#spaceArea")
-			.empty()
-			.load(filepath+"stats.jsp");
-		
-		userVars.showMenu = $(this).attr("id");
-		focusChange($(this));
-	});
-		
-	
+	}
+
 	var focusChange = function(that){
 		$("#btnsArea").find(".focus").removeClass("focus");
 		that.addClass("focus");
 	}
-
+ 
+	$("[name=manageMembers]").on("change", function(){
+		var value = $(this).val();
+		if(value === ""){
+			return false;
+		}else{
+			changeTabMenu(value);
+		}
+	});
+	changeTabMenu("partList");
+}());
 		
 	
 </script>
