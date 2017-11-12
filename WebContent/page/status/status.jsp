@@ -47,7 +47,6 @@ canvas {
 	기타 정보들 메뉴에 주를 경배하라, 8성부 아멘 올려놨습니다~ (반주자님 ㄳㄳ)
 </div>
 <script>
-
 if(Responsive.device === "desktop"){
 	$("#statusTable").css("width","40%");
 }else{
@@ -123,15 +122,16 @@ var setChartData = function(datas){
 	});
 }
  
-//Promise.resolve()
-//    .then(getToday)
-//    .then(today, member => {
 Promise.all([getToday(), getMemberInfo()])	
 	 .then(value => {
     	const toDay = new Date(value[0]);
     	const member = value[1];
     	const endDate = toDay.format("yyyyMMdd");
-    	const memberId = cookie.get("mylordId");
+    	const memberId = cookie.get("mylordId"),
+    		thisYear = toDay.format("yyyy");
+    	
+    	$("#yearB, #yearA").text(thisYear);
+    	
     	let ajaxData = {
     		url:"stats",
     		data:{
@@ -165,13 +165,21 @@ Promise.all([getToday(), getMemberInfo()])
     	setChartData(deepCopy(ajaxData));
     	
     	// 회비
-		let maxDues = Math.floor((toDay.getTime() - new Date((regiDate+"").yyyymmdd("-")).getTime()) / (1000*60*60*24*30));
-    	if(maxDues > 12) {
-    		maxDues = 12;
-    	}
-    	setBarChart("#duesBar", [["납부", member.dues], ["미납", (maxDues-member.dues < 0)?0:maxDues-member.dues]]);
+    	let maxDues = Math.floor((toDay.getTime() - new Date((regiDate+"").yyyymmdd("-")).getTime()) / (1000*60*60*24*30));
+		if(maxDues > 12) {
+			maxDues = 12;
+		}
+		setDues(member.member_id, thisYear, maxDues);
+		
     	$("#userName").html(member.name + " 님 ^^");
     });
+
+
+function setDues(memberId, thisYear, maxDues){
+   	ajax.run({url:"dues/"+memberId, data:{year:thisYear}}, function(data){
+   		setBarChart("#duesBar", [["납부", data.dues_cnt], ["미납", (maxDues-data.dues_cnt < 0)?0:maxDues-data.dues_cnt]]);
+   	});
+}
 
 	
 </script>

@@ -21,14 +21,11 @@ public class MemberEnrollmentController {
 	@Autowired
 	MemberEnrollmentService memberEnrollmentService;
 	
-	
-	
 	@ResponseBody
 	@RequestMapping(method = RequestMethod.GET)	
 	public Object getMembers(@ModelAttribute MemberEnrollment memberEnrollment) throws Exception{
 		return memberEnrollmentService.getOne(memberEnrollment);
 	}
-	
 	
 	@ResponseBody
 	@RequestMapping(method = RequestMethod.POST)	

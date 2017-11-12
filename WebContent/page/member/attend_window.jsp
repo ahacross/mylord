@@ -92,9 +92,19 @@
 					}
 	 			}
 			});
+	 		
+	 		// 등록된 재적이 없으면 재적 자동 등록
+	 		ajax.run({url:"enroll", data:{attend_date:$("[name=attendanceDate]").val().split("-").join(""), part:$(".tabHead .active a").data("value")}}, function(data){
+	 			if(!data){
+	 				ajax.run({url:"/enroll",method:"insert", data: userFns.makeEnrollData()}, function(after, before){});
+	 			}
+	 		});
+	 		
 	 		Footer.find("#close").click();
 	 	}, 1000);
 	}
+	
+	
 	
 	var close = function(){
 		targetWindow.userVars = {};

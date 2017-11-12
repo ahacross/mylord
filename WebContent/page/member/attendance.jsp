@@ -18,8 +18,8 @@
 	<div id="gridPartList" style="margin-top:5px;"></div>	
 	<div id="attendList" style="margin-top:10px;">
 		<div style="display:flex">
-			<label>예배전 재적 : <input type="text" class="input" name="before_count"/></label> &nbsp;&nbsp;
-			<label>예배후 재적 : <input type="text" class="input" name="after_count"/></label> &nbsp;&nbsp;
+			<label style="flex:1">예배전 재적 : <input type="text" class="input" name="before_count" style="width:100px;"/></label> &nbsp;&nbsp;
+			<label style="flex:1">예배후 재적 : <input type="text" class="input" name="after_count"  style="width:100px;"/></label> &nbsp;&nbsp;
 			<button id="saveEnroll" class="button raised bg-blue-500 color-white" style="padding: 3px 10px;min-width: 90px;">재적 수정</button>	
 		</div>
 	</div>
@@ -87,7 +87,6 @@
 	            },
 	            after_check: {
 	                template: function(summary) {
-	                	//return $('#gridPartList .tui-grid-rside-area .tui-grid-table-container .tui-grid-table tbody tr').find("td[data-column-name=after_check] :checkbox:checked").length + ' 명';
 	                	return '';
 	                }
 	            }
@@ -173,14 +172,18 @@
 		windowDialog.show(userWindows.attendWindow, 400, 430);
 	});
 	
-	$("#saveEnroll").on("click", function(){
-		var data = {};
+	const makeEnrollData = function(){
+		let data = {};
 		data.attend_date = $("[name=attendanceDate]").val().split("-").join("");
 		data.part = $("#partTab").find(".active a").data("value");
 		data.before_count = $("[name=before_count]").val();
 		data.after_count = $("[name=after_count]").val();
-		
-		ajax.run({url:"/enroll",method:"insert", data:data}, function(after, before){
+		return data;
+	}
+	userFns.makeEnrollData = makeEnrollData;
+	
+	$("#saveEnroll").on("click", function(){
+		ajax.run({url:"/enroll",method:"insert", data: makeEnrollData()}, function(after, before){
 			if(after > 0){
 				msg.alert("재적이 수정 되었습니다.");	
 			}
