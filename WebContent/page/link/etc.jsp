@@ -14,37 +14,37 @@
         <div style="flex: auto;" id="account"></div>
     </div>
 	<br/>
-	<br/>    
+	<br/>
     <div style="display: flex;flex-direction: row;">
         <div style="width: 10rem;">페이스북</div>
-        <div style="flex: auto;" id="account">
-    		<a href="https://www.facebook.com/groups/mylordchoir/" target="_blank">페이스북 마이로드</a>    
+        <div style="flex: auto;">
+    		<a href="https://www.facebook.com/groups/mylordchoir/" target="_blank">페이스북 마이로드</a>
         </div>
     </div>
     <br/>
 	<br/>
     <div style="display: flex;flex-direction: row;">
         <div style="width: 10rem;">연습실</div>
-        <div style="flex: auto;" id="account">
+        <div style="flex: auto;">
     		<a href="http://ahacross.woobi.co.kr/choir/" target="_blank">마이로드 연습실</a>
 			<div id="practiceManage" class="hide">
 				<a href="http://ahacross.woobi.co.kr/choir/song_manage.html" target="_blank">마이로드 연습실 관리</a>
-			</div>    
+			</div>
         </div>
     </div>
     <br/>
-	<br/>    
+	<br/>
     <div style="display: flex;flex-direction: row;">
         <div style="width: 10rem;">고전성가곡집2</div>
-        <div style="flex: auto;" id="account">        
-    		<a href="/choir2/" target="_blank">고전 성가곡집 mp3 파일들</a>    
+        <div style="flex: auto;" >
+    		<a href="/choir2/" target="_blank">고전 성가곡집 mp3 파일들</a>
         </div>
     </div>
     <br/>
-	<br/>    
+	<br/>
     <div style="display: flex;flex-direction: column;">
         <div>주를 경배하라(송영) <button id="areaHide" class="button raised bg-blue-500 color-white" style="padding: 0 0 0 8px;"><i class="fa fa-caret-left" aria-hidden="true"></i></button></div>
-        <div class="hide" style="flex: auto;">        
+        <div class="hide" style="flex: auto;">
 			<table style="flex:1">
 				<tr>
 					<td>sop</td>
@@ -77,7 +77,7 @@
 	<br/>
     <div style="display: flex;flex-direction: column;">
         <div>8성부 아멘 <button id="areaHide" class="button raised bg-blue-500 color-white" style="padding: 0 0 0 8px;"><i class="fa fa-caret-left" aria-hidden="true"></i></button></div>
-        <div class="hide" style="flex: auto;">        
+        <div class="hide" style="flex: auto;">
 			<table style="flex:1">
 				<tr>
 					<td>sop1</td>
@@ -132,7 +132,7 @@
     </div>
 </div>
 <script>
-ajax.run({url:"officer", data:{role:"임원(회계)"}}, function(after){
+ajax.run({url:"officer", data:{role:"임원(회계)", year:new Date().getFullYear()}}, function(after){
 	$("#account").html(after.first().etc);
 });
 
@@ -144,7 +144,7 @@ $("#etc.panel").on("click", "#areaHide", function(){
 	if( $(this).find(".fa-caret-left").length === 1) {
 		$(this).parent().next().show();
 		$(this).html('<i class="fa fa-caret-down" aria-hidden="true"></i>');
-	}else{		
+	}else{
 		$(this).parent().next().hide();
 		$(this).html('<i class="fa fa-caret-left" aria-hidden="true"></i>');
 	}

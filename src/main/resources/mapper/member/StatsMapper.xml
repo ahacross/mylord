@@ -65,7 +65,8 @@
 					${afterCheckCond}
 				</if>
 				), 1, 0)) 'after_cnt',
-				truncate(DATEDIFF(max(attendance_date), min(attendance_date)) / 7, 0) + 1 week_cnt
+				#truncate(DATEDIFF(max(attendance_date), min(attendance_date)) / 7, 0) + 1 week_cnt,
+				truncate(DATEDIFF('${endDate}', '${startDate}') / 7, 0 ) + 1 week_cnt   
 			from 
 				member m
 			left join member_attendance ma on ma.member_id = m.member_id			 

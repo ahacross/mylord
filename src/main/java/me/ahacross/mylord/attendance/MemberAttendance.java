@@ -4,9 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data 
+@Data
 @AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor 
 public class MemberAttendance {
 	private Integer member_id;
 	private String attendance_date;

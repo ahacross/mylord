@@ -23,6 +23,9 @@
 	    	<if test='role != null'>
 	    		and role = #{role}
 	    	</if>
+	    	<if test='year != null'>
+	    		and year = #{year}
+	    	</if>	    	
 	    	<if test='status != null'>
 	    		and o.status = #{status}
 	    	</if>

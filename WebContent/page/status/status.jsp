@@ -113,9 +113,12 @@ var rateToNum = function(rate){
 }
  
 var setChartData = function(datas){
-	ajax.run(datas, function(after, before){
-		const beforeRate = rateToNum(after.first().before_rate);
-		const afterRate = rateToNum(after.first().after_rate);
+	ajax.run(datas, function(after, before){		
+		if(after.length === 0){
+			after.push({});
+		} 
+		const beforeRate = rateToNum(after.first().before_rate || '0%');
+		const afterRate = rateToNum(after.first().after_rate || '0%');
 		
 		setGaugeChart(before.targetId, [['출석', beforeRate]]);
 		setGaugeChart(before.targetId.split("before").join("after"),[['출석', afterRate]]);

@@ -70,7 +70,15 @@
 				name:"practice",
 				width:30,
 				formatter:function(value) {
-					return (value)?'<a href="https://ahacross.me/practice.html?url='+value+'&part='+cookie.get("part")+'" target="_blank">연습</a>':''; 
+					if(value) {
+						if(value.indexOf(".mp4") > -1) {
+							return '<a href="https://ahacross.me/practice.html?url='+value+'&part='+cookie.get("part")+'" target="_blank">연습</a>';
+						}else if(value.indexOf('.html') > -1){
+							return '<a href="'+value+'" target="_blank">연습</a>';						
+						}	
+					}else{
+						return '';
+					}
 				}
 			}
 		];
