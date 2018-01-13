@@ -172,6 +172,7 @@ Promise.all([getToday(), getMemberInfo()])
 		if(maxDues > 12) {
 			maxDues = 12;
 		}
+		
 		setDues(member.member_id, thisYear, maxDues);
 		
     	$("#userName").html(member.name + " 님 ^^");
@@ -180,6 +181,9 @@ Promise.all([getToday(), getMemberInfo()])
 
 function setDues(memberId, thisYear, maxDues){
    	ajax.run({url:"dues/"+memberId, data:{year:thisYear}}, function(data){
+   		if(!data){
+   			data = {dues_cnt:0};
+   		}
    		setBarChart("#duesBar", [["납부", data.dues_cnt], ["미납", (maxDues-data.dues_cnt < 0)?0:maxDues-data.dues_cnt]]);
    	});
 }
