@@ -187,7 +187,7 @@
 		
 		var setAuth = function() {
 			return new Promise(function(resolve, reject) {
-				ajax.run({url:"officer", data:{member_id: cookie.get("mylordId"), status:'Y'}}, function(afterDatas){
+				ajax.run({url:"officer", data:{member_id: cookie.get("mylordId"), year:new Date().getFullYear()}}, function(afterDatas){
 					let auth = {};
 					afterDatas.forEach(function(role){
 						auth[role.role] = 1;
