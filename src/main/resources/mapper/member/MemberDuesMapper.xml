@@ -4,18 +4,17 @@
 <mapper namespace="me.ahacross.mylord.dues.MemberDuesMapper">
 	<select id="getList" resultType="hashmap" parameterType="me.ahacross.mylord.dues.MemberDues">	
 		select 
-			d.member_id,
-			name,
-			year,
-			dues_cnt,
+			m.member_id,
+			name,			 
+  			ifnull(dues_cnt, 0) dues_cnt,
 			status 
 		from 
-			member_dues d
-		join (select * from member where part = '${part}') m
-		on  d.member_id = m.member_id
+			member m
+		left join (select * from member_dues where year = '${year}') d		
+		on  m.member_id = d.member_id
 		<trim prefix="where" prefixOverrides="AND" >
-			<if test='year != null'>
-	    		year = #{year}
+			<if test='part != null'>
+	    		part = #{part}
 	    	</if>	    	
 	    </trim>
 		order by

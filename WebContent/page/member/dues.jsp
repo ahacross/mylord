@@ -91,7 +91,7 @@
 		];
 	}
 	
-	var gridPartList = tuiGrid.makeGrid({el:$('#gridPartList'), columns: getColumns()});
+	var gridPartList = tuiGrid.makeGrid({el:$('#gridPartList'), columns: getColumns(), rowHeight:25});
 	
 	var setTab = function(part){
 		ajax.run({url:"dues", data:{part:part, year:$("[name=year]").val()}}, function(partList){

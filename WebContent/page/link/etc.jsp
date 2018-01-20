@@ -23,14 +23,16 @@
     </div>
     <br/>
 	<br/>
-    <div style="display: flex;flex-direction: row;">
-        <div style="width: 10rem;">연습실</div>
-        <div style="flex: auto;">
-    		<a href="http://ahacross.woobi.co.kr/choir/" target="_blank">마이로드 연습실</a>
-			<div id="practiceManage" class="hide">
-				<a href="http://ahacross.woobi.co.kr/choir/song_manage.html" target="_blank">마이로드 연습실 관리</a>
-			</div>
-        </div>
+	<div id="photoNdrive" style="display:none">
+		<div style="display: flex;flex-direction: row;">
+	        <div style="flex: auto;">
+	    		<a href="https://drive.google.com/open?id=1HNJ2uEDva410uuzwyRE6lo6IH0xqvqaQ" target="_blank">마이로드 포토 및 드라이브 계정 접속 방법</a>
+	        </div>
+	    </div>
+		우선 '임원들'만 로그인 계정으로 접속을 하고 <br/>
+		다른 분들은 폴더를 공유해서 업로드 하는 걸로 하려고 합니다.<br/>
+		<a href="https://drive.google.com/open?id=1a48EaXb-xQdP3hF5k_A6JxnCkq8rs1FR" target="_blank">폴더 공유 방법(관리자용)</a><br/>
+		<a href="https://drive.google.com/open?id=1PlBW2b1_2Vmtc6g_Jz7a-gbOL89i18-D" target="_blank">폴더 업로드 방법(사용자용)</a>
     </div>
     <br/>
 	<br/>
@@ -138,6 +140,7 @@ ajax.run({url:"officer", data:{role:"임원(회계)", year:new Date().getFullYea
 
 if(cookie.get("mylordAuth").indexOf("임원") > -1){
 	$("#practiceManage").show();
+	$("#photoNdrive").show();
 }
 
 $("#etc.panel").on("click", "#areaHide", function(){

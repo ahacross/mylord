@@ -40,7 +40,12 @@ var tuiGrid = (function(tuiGrid, $, undefined){
 		if(!params.bodyHeight) {
 			delete gridOptions.bodyHeight; 
 		}
-		console.log(gridOptions);
+		
+		if(params.rowHeight) {
+			gridOptions.rowHeight = params.rowHeight;
+		}
+		
+		
 		grid = new tui.Grid(gridOptions);
 		tuiGrid.grids[gridId] = grid;
 		addGridMethods(grid);
