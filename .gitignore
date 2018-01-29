@@ -6,3 +6,5 @@ WebContent/catalina.2018-01-11.log
 target/classes/META-INF/maven/me.ahacross/mylord/pom.properties
 target/classes/META-INF/maven/me.ahacross/mylord/pom.properties
 target/classes/META-INF/MANIFEST.MF
+*.MF
+target/classes/META-INF/MANIFEST.MF

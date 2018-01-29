@@ -13,7 +13,6 @@
 			status,
 			regi_date,
 			comment,
-			dues,
 			(select max(attendance_date) from member_attendance where (before_check = 'Y' or after_check = 'Y') and member_id = m.member_id) last_attend 
 		from 
 			member m
@@ -24,9 +23,7 @@
 	    	<if test='phone != null'>
 	    		phone = #{phone}
 	    	</if>
-	    	<if test='passwd != null'>
-	    		passwd = #{passwd}
-	    	</if>
+	    	
 	    	<if test='birthday != null'>
 	    		and birthday like '____${birthday}%'
 	    	</if>
@@ -54,8 +51,8 @@
 	</select>
 	
 	<insert id="insert" parameterType="me.ahacross.mylord.member.Member" >
-		insert into member (member_id, name, phone, part, birthday, email, regi_date, comment, passwd) 
-		(select max(member_id) + 1 , #{name}, #{phone}, #{part}, #{birthday}, #{email}, #{regi_date}, #{comment}, #{phone} from member )		
+		insert into member (member_id, name, phone, part, birthday, email, regi_date, comment) 
+		(select max(member_id) + 1 , #{name}, #{phone}, #{part}, #{birthday}, #{email}, #{regi_date}, #{comment} from member )		
 	</insert>
 	
 	<update id="update" parameterType="me.ahacross.mylord.member.Member" >
@@ -82,15 +79,9 @@
 				<if test='regi_date != null'>
 					regi_date = #{regi_date} ,
 				</if>
-				<if test='dues != null'>
-					dues = #{dues} ,
-				</if>
 				<if test='comment != null'>
 					comment = #{comment}
-				</if>
-				<if test='passwd != null'>
-					passwd = #{passwd}
-				</if>
+				</if>				
 			</trim>			
 		where member_id = #{member_id}
 	</update>
