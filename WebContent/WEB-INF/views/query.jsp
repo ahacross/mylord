@@ -58,7 +58,7 @@
 <script>
 	$(document).ready(function(){
 		$("#run").on("click", function(){
-			ajax.run({url:"", method:"insert", data:{query:$("[name=query]").val()}}, function(after, before){
+			ajax.run({url:"query", method:"insert", data:{query:$("[name=query]").val()}}, function(after, before){
 				if(after.length > 0){
 					var header = _.keys(after[0]);
 					query.setDatas(header, after);
