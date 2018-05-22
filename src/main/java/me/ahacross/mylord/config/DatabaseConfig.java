@@ -42,14 +42,13 @@ public class DatabaseConfig implements TransactionManagementConfigurer {
 	}
 	
 	@Bean
-	public DataSource dataSource() {
-		 String encodedPass = decryptor("sVVblCHrM+Rgh+D6m+tw3cQj/XAbbEPJKkKJMrHmYMI=");
+	public DataSource dataSource() {		 
 		 
 		 DriverManagerDataSource dataSource = new DriverManagerDataSource();
 		 dataSource.setDriverClassName("org.mariadb.jdbc.Driver");
-		 dataSource.setUrl("jdbc:mariadb://192.168.50.50:3306/myload?autoReconnect=true&useUnicode=true&characterEncoding=utf8");
+		 dataSource.setUrl("jdbc:mariadb://192.168.50.50:3306/mylord?autoReconnect=true&useUnicode=true&characterEncoding=utf8");
 		 dataSource.setUsername("ahacross");
-		 dataSource.setPassword(encodedPass);
+		 dataSource.setPassword(decryptor("DgyKJQk//ObOu+97S77NEomSKnJy9wdt"));
 		 
 		 return dataSource;
 	 }
