@@ -14,8 +14,15 @@
 		on  m.member_id = d.member_id
 		<trim prefix="where" prefixOverrides="AND" >
 			<if test='part != null'>
-	    		part = #{part}
-	    	</if>	    	
+				<choose>
+					<when test='part == "e"'>
+			    		(part != 's' and part != 'a' and part != 't' and part != 'b')
+			    	</when>
+			    	<otherwise>
+			    		part = #{part}
+			    	</otherwise>
+				</choose>
+			</if>
 	    </trim>
 		order by
 			name

@@ -72,7 +72,7 @@
 				formatter:function(value) {
 					if(value) {
 						if(value.indexOf(".mp4") > -1) {
-							return '<a href="https://ahacross.me/practice.html?url='+value+'&part='+cookie.get("part")+'" target="_blank">연습</a>';
+							return '<a href="https://ahacross.me/practice/practice.html?url='+value+'&part='+cookie.get("part")+'" target="_blank">연습</a>';
 						}else if(value.indexOf('.html') > -1){
 							return '<a href="https://ahacross.me/practice/'+value+'?part='+cookie.get("part")+'" target="_blank">연습</a>';						
 						}	
